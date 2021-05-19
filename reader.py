@@ -22,7 +22,7 @@ class Reader:
     """
 
     def __init__(self) -> None:
-        self.rutaFile = "ATGFilesExamples\DoubleP.ATG"
+        self.rutaFile = "ATGFilesExamples\Calc\Calc.atg"
         self.streamCompleto = ""
         self.dictArchivoEntrada = ""
         self.lineasArchivo = []
@@ -36,6 +36,7 @@ class Reader:
         self.isToken = False
         self.isKeyword = False
         self.isEXCET = False
+        self.isProduction = False
         self.acumuladorExcept = ""  # el acumulador para saber que hay que exceptuar
         self.boolComillasPunto = False
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
@@ -117,6 +118,33 @@ class Reader:
 
             contadorInterno += 1
         return newTokenValue
+
+    def productionMultiLine(self, tokenEnorme, lineadelProduction):
+        """
+        Retorna la produccion multilinea
+        """
+        newProductionValue = ""
+        # obtenemos la linea del token general
+        lineaTokenHeader = self.lineasPalabras["PRODUCTIONS"]
+        line = self.lineasArchivoWithNumber[lineadelProduction]
+        line = line.rstrip("\n")  # eliminamos la linea
+        # line = line.replace(" ", "")  # quitamos el espacio en blanco
+        lineaArray = line.split("=", 1)
+        newProductionValue = newProductionValue+lineaArray[1]
+        varExit = True
+        contadorInterno = lineadelProduction+1
+        while varExit:
+            line = self.lineasArchivoWithNumber[contadorInterno]
+            line = line.rstrip("\n")  # eliminamos la linea
+            # line = line.replace(" ", "")  # quitamos el espacio en blanco
+            if(line[len(line)-1] == "."):
+                newProductionValue = newProductionValue+line.replace(".", "")
+                varExit = False
+            else:
+                newProductionValue = newProductionValue+line
+
+            contadorInterno += 1
+        return newProductionValue
 
     def replaceCharValues(self, charValue):
         acumulable = ""
@@ -212,27 +240,33 @@ class Reader:
                 self.isChar = True
                 self.isKeyword = False
                 self.isToken = False
+                self.isProduction = False
                 # creamos la entrada de valor en el dict final
                 self.jsonFinal["CHARACTERS"] = {}
             elif(line2 == "TOKENS" or line2 == "TOKEN"):
                 self.isChar = False
                 self.isKeyword = False
                 self.isToken = True
+                self.isProduction = False
                 # creamos la entrada de valor en el dict final
                 self.jsonFinal["TOKENS"] = {}
             elif(line2 == "KEYWORDS" or line2 == "KEYWORD"):
                 self.isChar = False
                 self.isKeyword = True
                 self.isToken = False
+                self.isProduction = False
                 # creamos la entrada de valor en el dict final
                 self.jsonFinal["KEYWORDS"] = {}
             elif(line2 == "PRODUCTIONS" or line2 == "PRAGMAS"):
                 self.isChar = False
                 self.isKeyword = False
                 self.isToken = False
+                self.isProduction = True
+                # creamos la entrada de valor en el dict final
+                self.jsonFinal["PRODUCTIONS"] = {}
 
-            #!----------------------------------------- CHARACTERES SECTIONS---------------------------------------------------
-            if((self.isChar == True) and (self.isKeyword == False) and (self.isToken == False)):
+            # ? ----------------------------------------- CHARACTERES SECTIONS---------------------------------------------------
+            if((self.isChar == True) and (self.isKeyword == False) and (self.isToken == False) and (self.isProduction == False)):
                 # hacemos split con el '=', esto es un ARRAY
                 charSplit = line.split("=")
                 if(type(charSplit) != None and len(charSplit) > 1 and charSplit[0] != "CHARACTERS"):
@@ -379,10 +413,9 @@ class Reader:
                     localDictChar[charName] = charValue1
                     self.jsonFinal["CHARACTERS"].update(localDictChar)
 
-                    #!----------------------------------------- FINALIZA CHARACTERES SECTIONS---------------------------------------------------
-                    # ? -----------------------------------------KEYWORDS SECTION ----------------------------------------------------------------
-                # leemos las keywords
-            elif((self.isChar == False) and (self.isKeyword == True) and (self.isToken == False)):
+            # ? ----------------------------------------- FINALIZA CHARACTERES SECTIONS---------------------------------------------------
+            # ? -----------------------------------------KEYWORDS SECTION ----------------------------------------------------------------
+            elif((self.isChar == False) and (self.isKeyword == True) and (self.isToken == False) and (self.isProduction == False)):
                 # hacemos split con el '=', esto es un ARRAY
                 keywordSplit = line.split("=")
                 if(type(keywordSplit) != None and len(keywordSplit) > 1 and keywordSplit[0] != "KEYWORDS"):
@@ -394,11 +427,9 @@ class Reader:
                         keyValue = keyValue[0:len(keyValue)-1]
                     localDictKeyWord[keyName] = keyValue
                     self.jsonFinal["KEYWORDS"].update(localDictKeyWord)
-
-                    # ? -----------------------------------------FINALIZA KEYWORDS SECTION ----------------------------------------------------------------
-                    # ? -----------------------------------------TOKENS SECTION ----------------------------------------------------------------
-                # leemos las tokens
-            elif((self.isChar == False) and (self.isKeyword == False) and (self.isToken == True)):
+            # ? -----------------------------------------FINALIZA KEYWORDS SECTION ----------------------------------------------------------------
+            # ? -----------------------------------------TOKENS SECTION ----------------------------------------------------------------
+            elif((self.isChar == False) and (self.isKeyword == False) and (self.isToken == True) and (self.isProduction == False)):
                 # hacemos split con el '=', esto es un ARRAY
                 tokenSplit = line.split("=")
                 if(type(tokenSplit) != None and len(tokenSplit) > 1 and tokenSplit[0] != "TOKENS"):
@@ -415,11 +446,32 @@ class Reader:
                         tokenValue = self.TokenMultiLinea(tokenValue, count2)
                         localTokenDict[tokenName] = tokenValue
                         self.jsonFinal["TOKENS"].update(localTokenDict)
+            # ? -----------------------------------------FINALIZA TOKENS SECTION ----------------------------------------------------------------
+            # ? -----------------------------------------PRODUCTIONS  SECTION ----------------------------------------------------------------
+            elif((self.isChar == False) and (self.isKeyword == False) and (self.isToken == False) and (self.isProduction == True)):
+                #print("soy produccion")
+                # pp(line)
+                productionSplit = line.split("=", 1)
+                if(type(productionSplit) != None and len(productionSplit) > 1 and productionSplit[0] != "PRODUCTIONS"):
+                    localProductDict = {}
+                    productionName = str(productionSplit[0].replace(" ", ""))
+                    productionValue = productionSplit[1]
+                    # además de remover verificamos que no sea de doble línea
+                    if(productionValue[len(productionValue)-1] == "."):
+                        productionValue = productionValue[0:len(
+                            productionValue)-1]
+                        localProductDict[productionName] = productionValue
+                        self.jsonFinal["PRODUCTIONS"].update(localProductDict)
+                    else:  # si por el contrario no termina en punto iteramos
+                        productionValue = self.productionMultiLine(
+                            productionValue, count2)
+                        localProductDict[productionName] = productionValue
+                        self.jsonFinal["PRODUCTIONS"].update(localProductDict)
+            # ? -----------------------------------------FINALIZA PRODUCTIONS SECTION ----------------------------------------------------------------
+                    #
             count2 += 1
 
-            # ? -----------------------------------------FINALIZA TOKENS SECTION ----------------------------------------------------------------
-
-         # Si incluso luego de todo esto no es aún set lo volvemos set
+        # Si incluso luego de todo esto no es aún set lo volvemos set
         for llave, valor in self.jsonFinal["CHARACTERS"].items():
             if(isinstance(valor, str)):
                 valor = self.funciones.getBetweenComillaSandComillaDoble(
@@ -432,6 +484,7 @@ class Reader:
         # print(self.jsonFinal["CHARACTERS"])
 
         # ahora valuamos Susituimos el valor de los tokens por otros mas conocidos
+        # ? ----------------------------------------------------CREACION TOKENS---------------------------------------------------
         for llaveToken, valorToken in self.jsonFinal["TOKENS"].items():
             newValorToken = self.funciones.substituLlavesCorchetes(valorToken)
             newValorTokenAskVerification = self.funciones.alterateAskChain(
@@ -662,14 +715,15 @@ class Reader:
             self.jsonFinal["TOKENS"][llaveToken] = localDictEncerrado
             contadorDictTokens = 0
             self.bannedPositionsString = []
-
-        """  print(self.jsonFinal["KEYWORDS"])
-        for llave, valor in self.jsonFinal["TOKENS"].items():
+        # ? ----------------------------------------------------FINALIZA CREACION TOKENS---------------------------------------------------
+        pp(self.jsonFinal["PRODUCTIONS"])
+        # print(self.jsonFinal["CHARACTERS"])
+        """ for llave, valor in self.jsonFinal["TOKENS"].items():
             print("LLAVE: ", llave)
-            print(self.jsonFinal["TOKENS"][llave])
-            # for numeroItem, valorItem in valor.items():
-                # print(
-                # f'Identificador: {valorItem.getIdenficador()} value: {valorItem.getValueIdentificador()}')
+            # print(self.jsonFinal["TOKENS"][llave])
+            for numeroItem, valorItem in valor.items():
+                print(
+                    f'Identificador: {valorItem.getIdenficador()} value: {valorItem.getValueIdentificador()}')
                 # print(valorItem) """
 
         """ for x, y in self.jsonFinal.items():
