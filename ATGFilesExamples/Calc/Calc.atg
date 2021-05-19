@@ -18,8 +18,7 @@ IGNORE eol + lf
 PRODUCTIONS
   Calc = [Declarations] StatSeq .
 
-  Declarations = 'VAR'
-       Ident<out spix>                    (. self.newVar(spix)       .)
+  Declarations ='VAR' Ident<out spix>                    (. self.newVar(spix)       .)
        { ',' Ident<out spix>              (. self.newVar(spix)       .)
        } ';'
     .
