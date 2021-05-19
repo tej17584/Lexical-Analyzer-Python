@@ -26,6 +26,7 @@ class Reader:
         self.streamCompleto = ""
         self.dictArchivoEntrada = ""
         self.lineasArchivo = []
+        self.lineasBloqueadas = []
         self.lineasArchivoWithNumber = {}
         self.lineasPalabras = {}
         self.jsonFinal = {}  # diccionario final
@@ -37,6 +38,9 @@ class Reader:
         self.isKeyword = False
         self.isEXCET = False
         self.isProduction = False
+        self.producciones = []
+        self.posBloqueadasTemp = []
+        self.tokens = []
         self.acumuladorExcept = ""  # el acumulador para saber que hay que exceptuar
         self.boolComillasPunto = False
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
@@ -145,6 +149,156 @@ class Reader:
 
             contadorInterno += 1
         return newProductionValue
+
+    def defMultiLineaProd(self, numeroLinea):
+        path = self.rutaFile
+
+        contador = 1
+        resultadoProd = ""
+        multiLinea = False
+        for linea in self.lineasArchivo:
+            linea = linea.replace("\n", "")
+            if(multiLinea):
+                self.lineasBloqueadas.append(contador)
+                if(linea[len(linea)-1] != "."):
+                    resultadoProd += linea
+                else:
+                    resultadoProd += linea
+                    break
+
+            if(multiLinea == False and contador == numeroLinea and linea[len(linea)-1] != "."):
+                array = linea.split("=", 1)
+                resultadoProd += array[1]
+                multiLinea = True
+
+            contador += 1
+
+        return resultadoProd
+
+    def obtenerProduccionCompuesta(self, linea, index, prodSimple):
+        """
+        Retorna la produccion multilinea
+        """
+        produccion = prodSimple
+        cont = 1
+        for i in linea:
+            if(int(cont) > int(index)+1):
+                if(i.isalpha()):
+                    self.posBloqueadasTemp.append(cont)
+                    produccion += i
+                else:
+                    break
+            cont += 1
+
+        return produccion
+
+    def replaceProduccion(self, acumulado):
+        """
+        Retorna la produccion multilinea
+        """
+        acumulado = acumulado.replace(" ", "")
+        acumulado = acumulado.replace(")", "")
+
+        return acumulado
+
+    def construccionProducciones(self):
+        """
+        Retorna la construccion de las producciones
+        """
+        #diccionarioProd = self.json["PRODUCTIONS"]
+        diccionarioProd = self.jsonFinal["PRODUCTIONS"]
+        print(self.producciones)
+        # print(self.tokens)
+        for key in diccionarioProd:
+            print(key)
+            definicion = diccionarioProd[key]
+            # print(definicion)
+            arrayProd = []
+            # nuevoDiccionarioProd = {}
+            esSintax = False
+            esToken = False
+            conParams = False
+            sintax = ""
+            token = ""
+            params = ""
+            acumulado = ""
+            self.posBloqueadasTemp = []
+            for index in range(len(definicion)-1):
+                if(index not in self.posBloqueadasTemp):
+                    acumulado += definicion[index]
+                    # print(acumulado)
+                    actual = definicion[index]
+                    futuro = definicion[index+1]
+                    if(actual == "(" and futuro == "."):
+                        self.posBloqueadasTemp.append(index)
+                        self.posBloqueadasTemp.append(index+1)
+                        esSintax = True
+                    elif(actual == "." and futuro == ")"):
+                        # print("sintax")
+                        # print(sintax)
+                        self.posBloqueadasTemp.append(index)
+                        self.posBloqueadasTemp.append(index+1)
+                        arrayProd.append(sintax)
+                        sintax = ""
+                        esSintax = False
+                        acumulado = ""
+                    elif(esSintax):
+                        sintax += definicion[index]
+                    elif(actual == "'" or actual == '"'):
+                        acumulado = ""
+                        if(esToken == False):
+                            esToken = True
+                        else:
+                            # print(token)
+                            arrayProd.append(token)
+                            token = ""
+                            esToken = False
+                    elif(esToken):
+                        token += definicion[index]
+                    elif(conParams == True and actual == ">"):
+                        arrayProd.append(params)
+                        conParams = False
+                        acumulado = ""
+                        params = ""
+                    elif(conParams):
+                        if(actual != ">" and actual != "<"):
+                            params += definicion[index]
+                    elif(self.replaceProduccion(acumulado) in self.producciones and not(futuro.isalpha())):
+                        if(futuro == "<"):
+                            conParams = True
+                        arrayProd.append(self.replaceProduccion(acumulado))
+                        acumulado = ""
+                    elif(acumulado.replace(" ", "") in self.producciones):
+                        produccion = self.obtenerProduccionCompuesta(
+                            definicion, index, acumulado)
+                        arrayProd.append(produccion.replace(" ", ""))
+                        acumulado = ""
+                    elif(acumulado.replace(" ", "") in self.tokens and not(futuro.isalpha())):
+                        # print("token")
+                        # print(acumulado)
+                        arrayProd.append(acumulado.replace(" ", ""))
+                        acumulado = ""
+                    elif(actual == "["):
+                        arrayProd.append(actual)
+                        acumulado = ""
+                    elif(actual == "]"):
+                        arrayProd.append(actual)
+                        acumulado = ""
+                    elif(actual == "{"):
+                        arrayProd.append(actual)
+                        acumulado = ""
+                    elif(actual == "}"):
+                        arrayProd.append(actual)
+                        acumulado = ""
+                    elif(actual == "|"):
+                        arrayProd.append(actual)
+                        acumulado = ""
+            print("-----FIN-----")
+            print(key)
+            # print(acumulado)
+            print(arrayProd)
+            print()
+            # diccionarioProd[key] = nuevoDiccionarioProd
 
     def replaceCharValues(self, charValue):
         acumulable = ""
@@ -436,6 +590,7 @@ class Reader:
                     localTokenDict = {}
                     tokenName = str(tokenSplit[0].replace(" ", ""))
                     tokenValue = tokenSplit[1]
+                    self.tokens.append(tokenName)
                     # removemos el punto del character
                     # además de remover verificamos que no sea de doble línea
                     if(tokenValue[len(tokenValue)-1] == "."):
@@ -448,23 +603,45 @@ class Reader:
                         self.jsonFinal["TOKENS"].update(localTokenDict)
             # ? -----------------------------------------FINALIZA TOKENS SECTION ----------------------------------------------------------------
             # ? -----------------------------------------PRODUCTIONS  SECTION ----------------------------------------------------------------
-            elif((self.isChar == False) and (self.isKeyword == False) and (self.isToken == False) and (self.isProduction == True)):
+            elif((self.isChar == False) and (self.isKeyword == False) and
+                 (self.isToken == False) and (self.isProduction == True)
+                 and count2 not in self.lineasBloqueadas):
                 #print("soy produccion")
                 # pp(line)
                 productionSplit = line.split("=", 1)
-                if(type(productionSplit) != None and len(productionSplit) > 1 and productionSplit[0] != "PRODUCTIONS"):
+                if(type(productionSplit) != None and len(productionSplit) > 1
+                   and productionSplit[0] != "PRODUCTIONS"):
                     localProductDict = {}
-                    productionName = str(productionSplit[0].replace(" ", ""))
+                    productionName = str(productionSplit[0])
+                    productionName = productionName.replace("  ", "")
                     productionValue = productionSplit[1]
+                    if("<" in productionName and ">" in productionName):
+                        acumulado = ""
+                        for i in productionName:
+                            if(i != "<"):
+                                acumulado += i
+                            else:
+                                self.producciones.append(
+                                    acumulado.replace(" ", ""))
+                                break
+                    else:
+                        self.producciones.append(
+                            productionName.replace(" ", ""))
                     # además de remover verificamos que no sea de doble línea
                     if(productionValue[len(productionValue)-1] == "."):
                         productionValue = productionValue[0:len(
                             productionValue)-1]
+                        productionValue = productionValue.replace("  ", "")
+                        productionValue = productionValue.replace("(. ", "(.")
+                        productionValue = productionValue.replace(" .)", ".)")
                         localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
                     else:  # si por el contrario no termina en punto iteramos
-                        productionValue = self.productionMultiLine(
-                            productionValue, count2)
+                        self.lineasBloqueadas.append(count2+1)
+                        productionValue = self.defMultiLineaProd(count2+1)
+                        productionValue = productionValue.replace("  ", "")
+                        productionValue = productionValue.replace("(. ", "(.")
+                        productionValue = productionValue.replace(" .)", ".)")
                         localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
             # ? -----------------------------------------FINALIZA PRODUCTIONS SECTION ----------------------------------------------------------------
@@ -716,7 +893,9 @@ class Reader:
             contadorDictTokens = 0
             self.bannedPositionsString = []
         # ? ----------------------------------------------------FINALIZA CREACION TOKENS---------------------------------------------------
-        pp(self.jsonFinal["PRODUCTIONS"])
+        # ? ----------------------------------------------------CREACION DE PRODUCCIONES---------------------------------------------------
+        self.construccionProducciones()
+        # ? ----------------------------------------------------FINALIZA CREACION DE PRODUCCIONES---------------------------------------------------
         # print(self.jsonFinal["CHARACTERS"])
         """ for llave, valor in self.jsonFinal["TOKENS"].items():
             print("LLAVE: ", llave)
