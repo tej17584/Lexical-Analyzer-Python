@@ -31,8 +31,9 @@ class variableProduction_Enum():
         self.accion = ""
         self.nombreT = ""
         self.nombreNT = ""
-        self.nombreIdentificador = ""
         self.isFunction = False
+        self.parameters = []
+        self.primeraPos = []
 
     def getTipoVariable(self):
         return self.tipoVariable.name
@@ -60,3 +61,15 @@ class variableProduction_Enum():
 
     def setIsFunction(self):
         return self.isFunction
+
+    def getParameters(self):
+        return self.parameters.pop()
+
+    def setParameters(self, parametro):
+        return self.parameters.append(parametro)
+
+    def getPrimeraPos(self):
+        return self.primeraPos
+
+    def setAddPrimeraPos(self, parametro):
+        return self.primeraPos.append(parametro)
