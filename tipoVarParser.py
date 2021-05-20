@@ -11,13 +11,15 @@ from enum import Enum
 from funciones import funciones
 
 
-class tipoVar(Enum):
+class tipoVar2(Enum):
     NOTERMINAL = 1
     APPEND = 2
     OR = 3
     KLEENE = 4
     ACTION = 5
     TERMINAL = 6
+    LENCERRADO = 7
+    RENCERRADO = 8
 
 
 class variableProduction_Enum():
@@ -32,6 +34,7 @@ class variableProduction_Enum():
         self.nombreT = ""
         self.nombreNT = ""
         self.isFunction = False
+        self.OrdenDeToken = ""
         self.parameters = []
         self.primeraPos = []
 
@@ -41,35 +44,35 @@ class variableProduction_Enum():
     def getAccion(self):
         return self.accion
 
-    def setAccion(self):
-        return self.accion
+    def setAccion(self, parametro):
+        self.accion = parametro
 
     def getNombreTerminal(self):
         return self.nombreT
 
-    def setNombreTerminal(self):
-        return self.nombreNT
+    def setNombreTerminal(self, parametro):
+        self.nombreT = parametro
 
     def getNombreNoTerminal(self):
         return self.nombreNT
 
-    def setNombreNoTerminal(self):
-        return self.nombreT
+    def setNombreNoTerminal(self, parametro):
+        self.nombreNT = parametro
 
     def getIsFunction(self):
         return self.isFunction
 
-    def setIsFunction(self):
-        return self.isFunction
+    def setIsFunction(self, parametro):
+        self.isFunction = parametro
 
     def getParameters(self):
         return self.parameters.pop()
 
     def setParameters(self, parametro):
-        return self.parameters.append(parametro)
+        self.parameters.append(parametro)
 
     def getPrimeraPos(self):
         return self.primeraPos
 
     def setAddPrimeraPos(self, parametro):
-        return self.primeraPos.append(parametro)
+        self.primeraPos.append(parametro)
