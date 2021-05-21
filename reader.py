@@ -222,100 +222,101 @@ class Reader:
         """
         Método principal de la construccion de producciones. 
         """
-        #diccionarioProd = self.json["PRODUCTIONS"]
-        diccionarioProd = self.jsonFinal["PRODUCTIONS"]
-        #print(self.producciones)
+        #localDictProductions = self.json["PRODUCTIONS"]
+        localDictProductions = self.jsonFinal["PRODUCTIONS"]
+        # print(self.producciones)
         # print(self.tokens)
-        for key in diccionarioProd:
-            print(key)
-            definicion = diccionarioProd[key]
-            # print(definicion)
-            arrayProd = []
-            # nuevoDiccionarioProd = {}
+        for llave in localDictProductions:
+            print(llave)
+            definicion = localDictProductions[llave]
+            # este array es la nueva produccion
+            produccionFinal = []
+            # variables del flujo de parametros
+            hasParameters = False
             esSintax = False
-            esToken = False
-            conParams = False
-            sintax = ""
+            isOneToken = False
+            # esta variables e por si es sintaxis
+            isSintaxis = ""
+            # variables como el token
             token = ""
-            params = ""
+            parametrosProduction = ""
             acumulado = ""
             self.productionsBlocked = []
             for index in range(len(definicion)-1):
                 if(index not in self.productionsBlocked):
                     acumulado += definicion[index]
                     # print(acumulado)
-                    actual = definicion[index]
-                    futuro = definicion[index+1]
-                    if(actual == "(" and futuro == "."):
+                    produccionActual = definicion[index]
+                    lookAheadProduction = definicion[index+1]
+                    if(produccionActual == "(" and lookAheadProduction == "."):
                         self.productionsBlocked.append(index)
                         self.productionsBlocked.append(index+1)
                         esSintax = True
-                    elif(actual == "." and futuro == ")"):
-                        # print("sintax")
-                        # print(sintax)
+                    elif(produccionActual == "." and lookAheadProduction == ")"):
                         self.productionsBlocked.append(index)
                         self.productionsBlocked.append(index+1)
-                        arrayProd.append(sintax)
-                        sintax = ""
+                        produccionFinal.append(isSintaxis)
+                        isSintaxis = ""
                         esSintax = False
                         acumulado = ""
                     elif(esSintax):
-                        sintax += definicion[index]
-                    elif(actual == "'" or actual == '"'):
+                        isSintaxis += definicion[index]
+                    elif(produccionActual == "'" or produccionActual == '"'):
                         acumulado = ""
-                        if(esToken == False):
-                            esToken = True
+                        if(isOneToken == False):
+                            isOneToken = True
                         else:
                             # print(token)
-                            arrayProd.append(token)
+                            produccionFinal.append(token)
                             token = ""
-                            esToken = False
-                    elif(esToken):
+                            isOneToken = False
+                    elif(isOneToken):
                         token += definicion[index]
-                    elif(conParams == True and actual == ">"):
-                        arrayProd.append(params)
-                        conParams = False
+                    elif(hasParameters == True and produccionActual == ">"):
+                        produccionFinal.append(parametrosProduction)
+                        hasParameters = False
                         acumulado = ""
-                        params = ""
-                    elif(conParams):
-                        if(actual != ">" and actual != "<"):
-                            params += definicion[index]
-                    elif(self.replaceProduccion(acumulado) in self.producciones and not(futuro.isalpha())):
-                        if(futuro == "<"):
-                            conParams = True
-                        arrayProd.append(self.replaceProduccion(acumulado))
+                        parametrosProduction = ""
+                    elif(hasParameters):
+                        if(produccionActual != ">" and produccionActual != "<"):
+                            parametrosProduction += definicion[index]
+                    elif(self.replaceProduccion(acumulado) in self.producciones and not(lookAheadProduction.isalpha())):
+                        if(lookAheadProduction == "<"):
+                            hasParameters = True
+                        produccionFinal.append(
+                            self.replaceProduccion(acumulado))
                         acumulado = ""
                     elif(acumulado.replace(" ", "") in self.producciones):
                         produccion = self.getProductionCompose(
                             definicion, index, acumulado)
-                        arrayProd.append(produccion.replace(" ", ""))
+                        produccionFinal.append(produccion.replace(" ", ""))
                         acumulado = ""
-                    elif(acumulado.replace(" ", "") in self.tokens and not(futuro.isalpha())):
+                    elif(acumulado.replace(" ", "") in self.tokens and not(lookAheadProduction.isalpha())):
                         # print("token")
                         # print(acumulado)
-                        arrayProd.append(acumulado.replace(" ", ""))
+                        produccionFinal.append(acumulado.replace(" ", ""))
                         acumulado = ""
-                    elif(actual == "["):
-                        arrayProd.append(actual)
+                    elif(produccionActual == "{"):
+                        produccionFinal.append(produccionActual)
                         acumulado = ""
-                    elif(actual == "]"):
-                        arrayProd.append(actual)
+                    elif(produccionActual == "}"):
+                        produccionFinal.append(produccionActual)
                         acumulado = ""
-                    elif(actual == "{"):
-                        arrayProd.append(actual)
+                    elif(produccionActual == "["):
+                        produccionFinal.append(produccionActual)
                         acumulado = ""
-                    elif(actual == "}"):
-                        arrayProd.append(actual)
+                    elif(produccionActual == "]"):
+                        produccionFinal.append(produccionActual)
                         acumulado = ""
-                    elif(actual == "|"):
-                        arrayProd.append(actual)
+                    elif(produccionActual == "|"):
+                        produccionFinal.append(produccionActual)
                         acumulado = ""
             print("-----FIN-----")
-            print(key)
+            print(llave)
             # print(acumulado)
-            print(arrayProd)
+            print(produccionFinal)
             print()
-            # diccionarioProd[key] = nuevoDiccionarioProd
+            # localDictProductions[key] = nuevoDiccionarioProd
 
     def replaceCharValues(self, charValue):
         acumulable = ""
