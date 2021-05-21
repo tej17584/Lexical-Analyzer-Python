@@ -222,7 +222,6 @@ class Reader:
         """
         Método principal de la construccion de producciones. 
         """
-        #localDictProductions = self.json["PRODUCTIONS"]
         localDictProductions = self.jsonFinal["PRODUCTIONS"]
         # print(self.producciones)
         # print(self.tokens)
