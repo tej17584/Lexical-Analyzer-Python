@@ -16,38 +16,38 @@ COMMENTS
 IGNORE eol + lf
 
 PRODUCTIONS
-  Calc = [Declarations] StatSeq .
+  Calc = [Declarations] # StatSeq .
 
-  Declarations ='VAR' Ident<out spix>                    (. self.newVar(spix)       .)
-       { ',' Ident<out spix>              (. self.newVar(spix)       .)
-       } ';'
+  Declarations ='VAR' # Ident<out spix>         #           (. self.newVar(spix)       .) #
+       { ',' # Ident<out spix>      #        (. self.newVar(spix)       .)
+       } # ';'
     .
 
-  StatSeq = Stat {';' Stat}.
+  StatSeq = Stat # {';' # Stat}.
 
-  Stat = "READ"  Ident<out spix>           (. self.readVal(spix)      .)
-      | "WRITE" Expr<out val>             (. self.writeVal(val)      .)
-      | Ident<out spix> ":=" Expr<out val>(. self.setVar(spix, val)  .)
+  Stat = ($ "READ" # Ident<out spix>    #       (. self.readVal(spix)      .) $)
+      | ($ "WRITE" # Expr<out val>       #      (. self.writeVal(val)      .) $)
+      | ($ Ident<out spix> # ":=" # Expr<out val> # (. self.setVar(spix, val)  .) $)
     .
 
-  Expr<out exprVal> = Term<out exprVal>
-      {  '+' Term<out termVal>            (. exprVal += termVal .)
-      |  '-' Term<out termVal>            (. exprVal -= termVal .)
+  Expr<out exprVal> = Term<out exprVal> #
+      { ($ '+' # Term<out termVal>   #         (. exprVal += termVal .) $)
+      | ($ '-' #  Term<out termVal>      #      (. exprVal -= termVal .) $)
       }
     .
 
-  Term<out termVal> = Fact<out termVal>
-      {  '*' Fact<out factVal>            (. termVal *= factVal .)
-      |  '/' Fact<out factVal>            (. termVal /= factVal .)
+  Term<out termVal> = Fact<out termVal> #
+      {  ($ '*' # Fact<out factVal>     #       (. termVal *= factVal .) $)
+      |  ($ '/' # Fact<out factVal>      #      (. termVal /= factVal .) $)
       }
     .
 
-  Fact<out factVal> = Ident<out spix>                  (. factVal = self.getVar(spix) .)
-      |  number                           (. factVal = self.getNumber()  .)
-      | '(' Expr<out factVal> ')'
+  Fact<out factVal> = ($ Ident<out spix>           #       (. factVal = self.getVar(spix) .) $)
+      | ($ number              #             (. factVal = self.getNumber()  .) $)
+      | ($ '(' # Expr<out factVal> # ')' $)
     .
 
-  Ident<out spix> = ident                               (. spix = self.getSpix()   .)
+  Ident<out spix> = ident          #                     (. spix = self.getSpix()   .)
     .
 
 END Calc.
