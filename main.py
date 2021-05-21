@@ -91,6 +91,7 @@ while True:
         f = open("scannerProyecto2Tejada.py", "w", encoding='utf8')
         f.write(
             """
+
 # Nombre: Alejandro Tejada
 # Curso: Diseño lenguajes de programacion
 # Fecha: Abril 2021
@@ -109,9 +110,11 @@ class Scanner():
         self.AFDConstruidoFinal = []
         self.nodosAceptacion = {}
         self.stringPrueba = ""
+        self.tokensLeidos = []
         self.abrirFiles()
         self.abrirArchivoPrueba()
         self.simular()
+        self.dumpTokensLeidos()
 
     def abrirFiles(self):
         # abrimos todos los files y asignamos
@@ -213,6 +216,12 @@ class Scanner():
 
         return array
 
+    def dumpTokensLeidos(self):
+        filename = 'arrayTokensLeidos'
+        outfile = open(filename, 'wb')
+        pickle.dump(self.tokensLeidos, outfile)
+        outfile.close()
+
     def simular(self):
         # este método simula
         print("------------------SIMULACION TOKENS INICIADA-------------------")
@@ -238,6 +247,7 @@ class Scanner():
                 else:
                     pp("El token del valor ----> " +
                        acumulador + " <--- es: " + token)
+                    self.tokensLeidos.append(token)
                     break
             caracterValuar = self.stringPrueba[contador]
             caracterValuar2 = self.stringPrueba[contador+1]
@@ -260,6 +270,7 @@ class Scanner():
                     S = [0]
                     S2 = [0]
                     acumulador = ""
+                    self.tokensLeidos.append(token)
                     # contador += 1
             elif(len(S) == 0):
                 print("TOKEN INVALIDO del valor: ")
