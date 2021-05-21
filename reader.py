@@ -26,7 +26,7 @@ class Reader:
         self.streamCompleto = ""
         self.dictArchivoEntrada = ""
         self.lineasArchivo = []
-        self.lineasBloqueadas = []
+        self.blockedLines = []
         self.lineasArchivoWithNumber = {}
         self.lineasPalabras = {}
         self.jsonFinal = {}  # diccionario final
@@ -39,7 +39,7 @@ class Reader:
         self.isEXCET = False
         self.isProduction = False
         self.producciones = []
-        self.posBloqueadasTemp = []
+        self.productionsBlocked = []
         self.tokens = []
         self.acumuladorExcept = ""  # el acumulador para saber que hay que exceptuar
         self.boolComillasPunto = False
@@ -123,9 +123,10 @@ class Reader:
             contadorInterno += 1
         return newTokenValue
 
-    def productionMultiLine(self, tokenEnorme, lineadelProduction):
+    def productionMultiLine(self, lineadelProduction):
         """
-        Retorna la produccion multilinea
+        Retorna la produccion multilinea. Este método es complementario
+        *@param lineadelProduction:  la linea de la produccion 
         """
         newProductionValue = ""
         # obtenemos la linea del token general
@@ -150,64 +151,80 @@ class Reader:
             contadorInterno += 1
         return newProductionValue
 
-    def defMultiLineaProd(self, numeroLinea):
-        path = self.rutaFile
-
-        contador = 1
-        resultadoProd = ""
-        multiLinea = False
-        for linea in self.lineasArchivo:
-            linea = linea.replace("\n", "")
-            if(multiLinea):
-                self.lineasBloqueadas.append(contador)
-                if(linea[len(linea)-1] != "."):
-                    resultadoProd += linea
+    def replaceMultiLineProduction(self, numeroLinea):
+        """
+        Retorna la produccion multilinea.
+        *@param numeroLinea: el numero de linea donde encontramos la production de multilinea
+        """
+        # Seteamos variables
+        counter = 1
+        isMultiLine = False
+        newProduction = ""
+        # iteramos en todo el archivo leido
+        for line in self.lineasArchivo:
+            # la linea la reemplazamos los saltos del inea
+            line = line.replace("\n", "")
+            # si la produccion es multiline
+            if(isMultiLine):
+                # se appendea a las lineas bloqueadas temporalmente
+                self.blockedLines.append(counter)
+                # luego si ya llegamos al final si ya topamos, entonces miramos donde dejarla
+                if(line[len(line)-1] != "."):
+                    newProduction += line
+                # de lo contrario vamos acumulando
                 else:
-                    resultadoProd += linea
+                    newProduction += line
                     break
+            # si es multilinea falso y el contador donde iniciamos es igual a la linea que vamos y si
+            # la linea no tiene punto final entonces apendeamos a la produccion de retorno todo el split
+            if(isMultiLine == False and counter == numeroLinea
+               and line[len(line)-1] != "."):
+                array = line.split("=", 1)
+                newProduction += array[1]
+                isMultiLine = True
+            counter += 1
 
-            if(multiLinea == False and contador == numeroLinea and linea[len(linea)-1] != "."):
-                array = linea.split("=", 1)
-                resultadoProd += array[1]
-                multiLinea = True
+        return newProduction
 
-            contador += 1
-
-        return resultadoProd
-
-    def obtenerProduccionCompuesta(self, linea, index, prodSimple):
+    def getProductionCompose(self, line, indice, lastProduction):
         """
-        Retorna la produccion multilinea
+        Retorna la produccion pero compuesta, es decir que a partir del line, indice y la produccion
+        simple nos retorna ese valor.
+        *@param line: el numero de linea
+        *@param indice: el index donde estamos
+        *@param lastProduction: la produccion anterior
         """
-        produccion = prodSimple
+        newProduction = ""
+        newProduction = lastProduction
         cont = 1
-        for i in linea:
-            if(int(cont) > int(index)+1):
+        for i in line:
+            if(int(cont) > int(indice)+1):
                 if(i.isalpha()):
-                    self.posBloqueadasTemp.append(cont)
-                    produccion += i
+                    self.productionsBlocked.append(cont)
+                    newProduction += i
                 else:
                     break
             cont += 1
 
-        return produccion
+        return newProduction
 
-    def replaceProduccion(self, acumulado):
+    def replaceProduccion(self, productionAcumulada):
         """
-        Retorna la produccion multilinea
+        Reemplaza la produccion con valores dummy
+        *@param productionAcumulada: el numero de linea
         """
-        acumulado = acumulado.replace(" ", "")
-        acumulado = acumulado.replace(")", "")
+        productionAcumulada = productionAcumulada.replace(" ", "")
+        productionAcumulada = productionAcumulada.replace(")", "")
 
-        return acumulado
+        return productionAcumulada
 
     def construccionProducciones(self):
         """
-        Retorna la construccion de las producciones
+        Método principal de la construccion de producciones. 
         """
         #diccionarioProd = self.json["PRODUCTIONS"]
         diccionarioProd = self.jsonFinal["PRODUCTIONS"]
-        print(self.producciones)
+        #print(self.producciones)
         # print(self.tokens)
         for key in diccionarioProd:
             print(key)
@@ -222,22 +239,22 @@ class Reader:
             token = ""
             params = ""
             acumulado = ""
-            self.posBloqueadasTemp = []
+            self.productionsBlocked = []
             for index in range(len(definicion)-1):
-                if(index not in self.posBloqueadasTemp):
+                if(index not in self.productionsBlocked):
                     acumulado += definicion[index]
                     # print(acumulado)
                     actual = definicion[index]
                     futuro = definicion[index+1]
                     if(actual == "(" and futuro == "."):
-                        self.posBloqueadasTemp.append(index)
-                        self.posBloqueadasTemp.append(index+1)
+                        self.productionsBlocked.append(index)
+                        self.productionsBlocked.append(index+1)
                         esSintax = True
                     elif(actual == "." and futuro == ")"):
                         # print("sintax")
                         # print(sintax)
-                        self.posBloqueadasTemp.append(index)
-                        self.posBloqueadasTemp.append(index+1)
+                        self.productionsBlocked.append(index)
+                        self.productionsBlocked.append(index+1)
                         arrayProd.append(sintax)
                         sintax = ""
                         esSintax = False
@@ -269,7 +286,7 @@ class Reader:
                         arrayProd.append(self.replaceProduccion(acumulado))
                         acumulado = ""
                     elif(acumulado.replace(" ", "") in self.producciones):
-                        produccion = self.obtenerProduccionCompuesta(
+                        produccion = self.getProductionCompose(
                             definicion, index, acumulado)
                         arrayProd.append(produccion.replace(" ", ""))
                         acumulado = ""
@@ -605,7 +622,7 @@ class Reader:
             # ? -----------------------------------------PRODUCTIONS  SECTION ----------------------------------------------------------------
             elif((self.isChar == False) and (self.isKeyword == False) and
                  (self.isToken == False) and (self.isProduction == True)
-                 and count2 not in self.lineasBloqueadas):
+                 and count2 not in self.blockedLines):
                 #print("soy produccion")
                 # pp(line)
                 productionSplit = line.split("=", 1)
@@ -631,14 +648,18 @@ class Reader:
                     if(productionValue[len(productionValue)-1] == "."):
                         productionValue = productionValue[0:len(
                             productionValue)-1]
+                        # Reemplazamos los valores de cerradura de sintaxis y otras
                         productionValue = productionValue.replace("  ", "")
                         productionValue = productionValue.replace("(. ", "(.")
                         productionValue = productionValue.replace(" .)", ".)")
                         localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
                     else:  # si por el contrario no termina en punto iteramos
-                        self.lineasBloqueadas.append(count2+1)
-                        productionValue = self.defMultiLineaProd(count2+1)
+
+                        self.blockedLines.append(count2+1)
+                        productionValue = self.replaceMultiLineProduction(
+                            count2+1)
+                        # Reemplazamos los valores de cerradura de sintaxis y otras
                         productionValue = productionValue.replace("  ", "")
                         productionValue = productionValue.replace("(. ", "(.")
                         productionValue = productionValue.replace(" .)", ".)")
