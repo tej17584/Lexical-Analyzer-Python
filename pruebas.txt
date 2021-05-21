@@ -1,2 +1,1 @@
-holo 66 +150 alejandro especial 66.5 150_
-55
+holo 66 +150 alejandro especial 150
