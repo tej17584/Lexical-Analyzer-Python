@@ -18,8 +18,13 @@ class tipoVar2(Enum):
     KLEENE = 4
     ACTION = 5
     TERMINAL = 6
-    LENCERRADO = 7
-    RENCERRADO = 8
+    LENCERRADO_OR = 7
+    RENCERRADO_OR = 8
+    NOMBREPROD = 9
+    LENCERRADO_WHILE = 10
+    RENCERRADO_WHILE = 11
+    LENCERRADO_CORCHETE = 12
+    RENCERRADO_CORCHETE = 13
 
 
 class variableProduction_Enum():
@@ -56,14 +61,20 @@ class variableProduction_Enum():
     def getNombreNoTerminal(self):
         return self.nombreNT
 
+    def setOrdenToken(self, parametro):
+        self.OrdenDeToken = parametro
+
+    def getOrdenToken(self):
+        return self.OrdenDeToken
+
     def setNombreNoTerminal(self, parametro):
         self.nombreNT = parametro
 
     def getIsFunction(self):
         return self.isFunction
 
-    def setIsFunction(self, parametro):
-        self.isFunction = parametro
+    def setIsFunction(self):
+        self.isFunction = True
 
     def getParameters(self):
         return self.parameters.pop()
@@ -76,3 +87,11 @@ class variableProduction_Enum():
 
     def setAddPrimeraPos(self, parametro):
         self.primeraPos.append(parametro)
+
+    def getParametroGeneral(self):
+        if(self.accion == "" and self.nombreNT == "" and self.nombreT != ""):
+            return self.nombreT
+        elif(self.accion == "" and self.nombreNT != "" and self.nombreT == ""):
+            return self.nombreNT
+        elif (self.accion != "" and self.nombreNT == "" and self.nombreT == ""):
+            return self.accion
