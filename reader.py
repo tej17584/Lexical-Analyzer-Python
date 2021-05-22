@@ -9,6 +9,7 @@ V 1.0
 
 # ! Zona de imports
 from os import remove
+from tipoVarParser import tipoVar2, variableProduction_Enum
 from funciones import funciones
 from pprint import pprint as pp
 from posftixEvaluador import *
@@ -44,6 +45,7 @@ class Reader:
         self.acumuladorExcept = ""  # el acumulador para saber que hay que exceptuar
         self.boolComillasPunto = False
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
+        self.diccionarioProduccionesFinal = {}
         self.readDocumentAndPoblateStream()
         self.readDocument()
 
@@ -240,7 +242,24 @@ class Reader:
             token = ""
             parametrosProduction = ""
             acumulado = ""
+            self.diccionarioProduccionesFinal[llave] = []
+            arrayProdTemp = self.diccionarioProduccionesFinal[llave]
             self.productionsBlocked = []
+            if("<" in llave and ">" in llave):
+                indexLlaveMenor = llave.find("<")
+                indexLlaveMayor = llave.find(">")
+                keyLimpio = llave[0:indexLlaveMenor]
+                parameters = llave[indexLlaveMenor+1:indexLlaveMayor]
+                newTipoVar = variableProduction_Enum(tipoVar2.NOMBREPROD)
+                newTipoVar.setNombreNoTerminal(keyLimpio)
+                newTipoVar.setParameters(parameters)
+                newTipoVar.setIsFunction()
+                arrayProdTemp.append(newTipoVar)
+            else:
+                newTipoVar = variableProduction_Enum(tipoVar2.NOMBREPROD)
+                newTipoVar.setNombreNoTerminal(llave)
+                newTipoVar.setIsFunction()
+                arrayProdTemp.append(newTipoVar)
             for index in range(len(definicion)-1):
                 if(index not in self.productionsBlocked):
                     acumulado += definicion[index]
@@ -254,6 +273,9 @@ class Reader:
                     elif(produccionActual == "." and lookAheadProduction == ")"):
                         self.productionsBlocked.append(index)
                         self.productionsBlocked.append(index+1)
+                        newTipoVar = variableProduction_Enum(tipoVar2.ACTION)
+                        newTipoVar.setAccion(isSintaxis)
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(isSintaxis)
                         isSintaxis = ""
                         esSintax = False
@@ -266,12 +288,25 @@ class Reader:
                             isOneToken = True
                         else:
                             # print(token)
-                            produccionFinal.append(token)
+                            # produccionFinal.append(token)
+                            if(token in self.tokens):
+                                numToken = self.tokens.index(token) + 1
+                            else:
+                                self.tokens.append(token)
+                                numToken = len(self.tokens)
+                            newTipoVar = variableProduction_Enum(
+                                tipoVar2.TERMINAL)
+                            newTipoVar.setNombreTerminal(token)
+                            # print("token: ", token)
+                            newTipoVar.setOrdenToken(numToken)
+                            arrayProdTemp.append(newTipoVar)
                             token = ""
                             isOneToken = False
                     elif(isOneToken):
                         token += definicion[index]
                     elif(hasParameters == True and produccionActual == ">"):
+                        newTipoVar.setParameters(parametrosProduction)
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(parametrosProduction)
                         hasParameters = False
                         acumulado = ""
@@ -280,42 +315,94 @@ class Reader:
                         if(produccionActual != ">" and produccionActual != "<"):
                             parametrosProduction += definicion[index]
                     elif(self.replaceProduccion(acumulado) in self.producciones and not(lookAheadProduction.isalpha())):
+                        acumNuevo = self.replaceProduccion(acumulado)
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.NOTERMINAL)
+                        newTipoVar.setNombreNoTerminal(acumNuevo)
+                        newTipoVar.setIsFunction()
                         if(lookAheadProduction == "<"):
                             hasParameters = True
-                        produccionFinal.append(
-                            self.replaceProduccion(acumulado))
+                        # produccionFinal.append(
+                            # self.replaceProduccion(acumulado))
+                        else:
+                            arrayProdTemp.append(newTipoVar)
+                        produccionFinal.append(acumNuevo)
                         acumulado = ""
-                    elif(acumulado.replace(" ", "") in self.producciones):
+                    elif(self.replaceProduccion(acumulado) in self.producciones):
                         produccion = self.getProductionCompose(
                             definicion, index, acumulado)
-                        produccionFinal.append(produccion.replace(" ", ""))
+                        #produccionFinal.append(produccion.replace(" ", ""))
+                        produccion = self.replaceProduccion(produccion)
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.NOTERMINAL)
+                        newTipoVar.setNombreNoTerminal(produccion)
+                        newTipoVar.setIsFunction()
+                        arrayProdTemp.append(newTipoVar)
+                        produccionFinal.append(produccion)
                         acumulado = ""
-                    elif(acumulado.replace(" ", "") in self.tokens and not(lookAheadProduction.isalpha())):
+                    elif(self.replaceProduccion(acumulado) in self.tokens and not(lookAheadProduction.isalpha())):
                         # print("token")
                         # print(acumulado)
-                        produccionFinal.append(acumulado.replace(" ", ""))
+                        #produccionFinal.append(acumulado.replace(" ", ""))
+                        acumuladoNuevo = self.replaceProduccion(acumulado)
+                        if(acumuladoNuevo in self.tokens):
+                            numToken = self.tokens.index(acumuladoNuevo) + 1
+                        else:
+                            self.tokens.append(acumuladoNuevo)
+                            numToken = len(self.tokens)
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.TERMINAL)
+                        newTipoVar.setNombreTerminal(acumuladoNuevo)
+                        # print("token: ", acumulado)
+                        newTipoVar.setOrdenToken(numToken)
+                        arrayProdTemp.append(newTipoVar)
+                        produccionFinal.append(acumuladoNuevo)
                         acumulado = ""
                     elif(produccionActual == "{"):
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.LENCERRADO_WHILE)
+                        newTipoVar.setNombreTerminal("{")
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
                     elif(produccionActual == "}"):
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.RENCERRADO_WHILE)
+                        newTipoVar.setNombreTerminal("}")
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
                     elif(produccionActual == "["):
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.LENCERRADO_CORCHETE)
+                        newTipoVar.setNombreTerminal("[")
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
                     elif(produccionActual == "]"):
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.RENCERRADO_CORCHETE)
+                        newTipoVar.setNombreTerminal("]")
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
                     elif(produccionActual == "|"):
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.OR)
+                        newTipoVar.setNombreTerminal("|")
+                        arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
             print("-----FIN-----")
             print(llave)
             # print(acumulado)
-            print(produccionFinal)
+            # print(produccionFinal)
             print()
             # localDictProductions[key] = nuevoDiccionarioProd
+            for obj in self.diccionarioProduccionesFinal[llave]:
+                print(obj.getTipoVariable() + " : " + obj.getParametroGeneral())
+            print()
+            print()
 
     def replaceCharValues(self, charValue):
         acumulable = ""
