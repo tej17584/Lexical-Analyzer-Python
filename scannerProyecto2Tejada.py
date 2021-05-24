@@ -1,6 +1,5 @@
 
 
-
 # Nombre: Alejandro Tejada
 # Curso: Diseño lenguajes de programacion
 # Fecha: Abril 2021
@@ -215,4 +214,3 @@ class Scanner():
 
 
 objeSCanner = Scanner()
-
