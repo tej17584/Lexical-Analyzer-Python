@@ -45,7 +45,7 @@ class Reader:
         self.tokens = []
         self.acumuladorExcept = ""  # el acumulador para saber que hay que exceptuar
         self.boolComillasPunto = False
-        self.primeraPos = {}  # esta es la primera pos
+        self.dictPrimeraPos = {}  # esta es la primera pos
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
         self.diccionarioProduccionesFinal = {}
         self.readDocumentAndPoblateStream()
@@ -190,48 +190,48 @@ class Reader:
 
         return newProduction
 
-    def primera(self):
+    def primeraPosProducciones(self):
+        """
+        calcula la primeraPosProducciones pos de las producciones
+        *@param ninguno: ninguno
+        """
         for x in reversed(self.producciones):
-            # print(x)
-            # print("----")
-            soyOR = False
-            yaEntreNT = False
-            yaEntreT = False
+            # se hace un for reversed
+            # variables para "encerrar" las condiciones
+            isOrProduction = False
+            noTerminalBool = False
+            terminalBool = False
             for index in range(len(self.diccionarioProduccionesFinal[x])):
-                # print(index)
                 llave = self.diccionarioProduccionesFinal[x][index]
-                # print(llave.getParametroGeneral())
                 arrayTemp = []
+                # si la variable es de tipo NO terminal, significa que lo primero que necesitamos
+                # es la primera pos
                 if llave.getTipoVariable() == "NOTERMINAL":
-                    self.primeraPos[x] = self.primeraPos[llave.getNombreNoTerminal()]
+                    self.dictPrimeraPos[x] = self.dictPrimeraPos[llave.getNombreNoTerminal(
+                    )]
                     break
                 elif llave.getTipoVariable() == "TERMINAL":
                     indexLlave = llave.getNombreTerminal()
-                    #print("indexLlave: " + indexLlave)
                     arrayTemp.append(llave.getNombreTerminal())
-                    self.primeraPos[x] = arrayTemp
+                    self.dictPrimeraPos[x] = arrayTemp
                     for i in range(index+1, len(self.diccionarioProduccionesFinal[x])):
-                        #print("i actual")
-                        # print(
-                        #    self.diccionarioProduccionesFinal[x][i].getParametroGeneral())
                         llave2 = self.diccionarioProduccionesFinal[x][i]
-                        if(soyOR and llave2.getTipoVariable() != "RENCERRADO_OR"):
-                            if(llave2.getTipoVariable() == "NOTERMINAL" and yaEntreNT == False):
-                                yaEntreNT = True
-                                for primPos in self.primeraPos[llave2.getNombreNoTerminal()]:
+                        if(isOrProduction and llave2.getTipoVariable() != "RENCERRADO_OR"):
+                            if(llave2.getTipoVariable() == "NOTERMINAL" and noTerminalBool == False):
+                                noTerminalBool = True
+                                for primPos in self.dictPrimeraPos[llave2.getNombreNoTerminal()]:
                                     arrayTemp.append(primPos)
-                                    self.primeraPos[x] = arrayTemp
-                            if(llave2.getTipoVariable() == "TERMINAL" and yaEntreT == False):
-                                yaEntreT = True
+                                    self.dictPrimeraPos[x] = arrayTemp
+                            if(llave2.getTipoVariable() == "TERMINAL" and terminalBool == False):
+                                terminalBool = True
                                 arrayTemp.append(llave2.getNombreTerminal())
-                                self.primeraPos[x] = arrayTemp
+                                self.dictPrimeraPos[x] = arrayTemp
                         elif(llave2.getTipoVariable() == "LENCERRADO_OR"):
-                            soyOR = True
+                            isOrProduction = True
                         elif(llave2.getTipoVariable() == "RENCERRADO_OR"):
-                            soyOR = False
+                            isOrProduction = False
                     break
-
-        print("############################", self.primeraPos)
+        print("############################", self.dictPrimeraPos)
 
     def getProductionCompose(self, line, indice, lastProduction):
         """
@@ -363,6 +363,7 @@ class Reader:
                             newTipoVar = variableProduction_Enum(
                                 tipoVar2.TERMINAL)
                             newTipoVar.setNombreTerminal(token)
+                            newTipoVar.setAddPrimeraPos(token)
                             # print("token: ", token)
                             newTipoVar.setOrdenToken(numToken)
                             arrayProdTemp.append(newTipoVar)
@@ -434,6 +435,7 @@ class Reader:
                             tipoVar2.TERMINAL)
                         newTipoVar.setNombreTerminal(acumuladoNuevo)
                         # print("token: ", acumulado)
+                        newTipoVar.setAddPrimeraPos(acumuladoNuevo)
                         newTipoVar.setOrdenToken(numToken)
                         arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(acumuladoNuevo)
@@ -1089,7 +1091,7 @@ class Reader:
         # ? ----------------------------------------------------FINALIZA CREACION TOKENS---------------------------------------------------
         # ? ----------------------------------------------------CREACION DE PRODUCCIONES---------------------------------------------------
         self.construccionProducciones()
-        self.primera()
+        self.primeraPosProducciones()
         cont = 0
         for key, produccion in self.diccionarioProduccionesFinal.items():
             cont += 1
