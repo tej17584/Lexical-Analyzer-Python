@@ -22,8 +22,8 @@ class ConversionPostfixTokens:
         self.arrayOperandos = []
         # seteamos la precedencia. La suma y resta es 1, la multiplicacion y division son 2 y la exponenciacion es 3, siguiendo reglas de la aritmética
         self.outputPostfix = []
-        self.precedenceV2 = {'OR': 1, 'APPEND': 2,
-                             'KLEENE': 3, '?': 3, "+": 3}  # diccionario de precedencia version 2
+        # diccionario de precedencia version 2
+        self.precedenceV2 = {'OR': 1, 'APPEND': 2}
         self.funciones = funciones()
 
     # Funcion para verificar si el caracter es un operador
@@ -72,7 +72,7 @@ class ConversionPostfixTokens:
         self.arrayOperandos.append(op)  # se hace pop
 
     # ? Método principal para convertir
-    def infixToPostfix(self, exp):
+    def infixToPostfixProducciones(self, exp):
         # Iteramos sobre la exppresión
         # for llave, i in exp.items():
         for i in exp:
@@ -93,7 +93,8 @@ class ConversionPostfixTokens:
             # Si tenemos un paréntesis abierto, se agrega al STACK
             elif (i.getTipoVariable() == 'LENCERRADO_OR' or
                   i.getTipoVariable() == 'LENCERRADO_WHILE' or
-                  i.getTipoVariable() == 'RENCERRADO_CORCHETE'):
+                  i.getTipoVariable() == 'LENCERRADO_CORCHETE'):
+                self.outputPostfix.append(i)
                 self.push(i)
             # Si el caracter entrante es el cierre de paréntesis, hacemos pop y lo mandamos a outputPostfix hasta que encontremos otra abertura de paréntesis
             elif (i.getTipoVariable() == 'RENCERRADO_OR' or
@@ -109,6 +110,7 @@ class ConversionPostfixTokens:
                     if (a == ""):
                         print("No hay signo de cerrado de paréntesis")
                         return -1
+                self.outputPostfix.append(i)
                 # si llegamos a la condicion del while, entonces retornamos -1 para salir
                 if (not self.isEmpty() and self.peekTopOfStack().getTipoVariable() != 'LENCERRADO_OR'
                         and self.peekTopOfStack().getTipoVariable() != 'LENCERRADO_WHILE'
