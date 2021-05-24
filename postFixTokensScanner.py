@@ -4,7 +4,7 @@ Curso: Diseño lenguajes de programacion
 Fecha: Abril 2021
 Programa: postfixTokensScanner.py
 Propósito: ESte programa toma el listado de objetos que leimos linealmente y lo pasa a postfix
-V 1.0
+V 2.0
 """
 
 #! Zona de imports
@@ -13,7 +13,7 @@ from tipoVar import *
 from pprint import pprint as pp
 
 
-class ConversionPostfixTokens:
+class ConversionPostfixScanner:
     # Constructor de las variables
     def __init__(self):
         self.top = -1
