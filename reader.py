@@ -198,9 +198,9 @@ class Reader:
         """
         newProduction = ""
         newProduction = lastProduction
-        cont = 1
+        cont = 0
         for i in line:
-            if(int(cont) > int(indice)+1):
+            if(int(cont) > int(indice)):
                 if(i.isalpha()):
                     self.productionsBlocked.append(cont)
                     newProduction += i
@@ -242,6 +242,7 @@ class Reader:
             token = ""
             parametrosProduction = ""
             acumulado = ""
+            exprecion = ""
             self.diccionarioProduccionesFinal[llave] = []
             arrayProdTemp = self.diccionarioProduccionesFinal[llave]
             self.productionsBlocked = []
@@ -282,6 +283,25 @@ class Reader:
                         acumulado = ""
                     elif(esSintax):
                         isSintaxis += definicion[index]
+                    if(produccionActual == "(" and lookAheadProduction == "$"):
+                        self.productionsBlocked.append(index)
+                        self.productionsBlocked.append(index+1)
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.LENCERRADO_OR)
+                        newTipoVar.setNombreTerminal("($")
+                        arrayProdTemp.append(newTipoVar)
+                        produccionFinal.append("($")
+                    elif(produccionActual == "$" and lookAheadProduction == ")"):
+                        # print("sintax")
+                        # print(sintax)
+                        self.productionsBlocked.append(index)
+                        self.productionsBlocked.append(index+1)
+                        newTipoVar = variableProduction_Enum(
+                            tipoVar2.RENCERRADO_OR)
+                        newTipoVar.setNombreTerminal("$)")
+                        arrayProdTemp.append(newTipoVar)
+                        produccionFinal.append("$)")
+                        acumulado = ""
                     elif(produccionActual == "'" or produccionActual == '"'):
                         acumulado = ""
                         if(isOneToken == False):
@@ -337,7 +357,21 @@ class Reader:
                             tipoVar2.NOTERMINAL)
                         newTipoVar.setNombreNoTerminal(produccion)
                         newTipoVar.setIsFunction()
-                        arrayProdTemp.append(newTipoVar)
+                        # arrayProdTemp.append(newTipoVar)
+                        indexProd = definicion.find(produccion)
+                        acum = ""
+                        contLocal = 0
+                        boolLocal = False
+                        definicionLocal = definicion[indexProd:len(definicion)]
+                        for i in definicionLocal:
+                            acum += i
+                            contLocal += 1
+                            if(acum == produccion):
+                                if(definicionLocal[contLocal] == "<"):
+                                    hasParameters = True
+                                    boolLocal = True
+                        if(boolLocal == False):
+                            arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccion)
                         acumulado = ""
                     elif(self.replaceProduccion(acumulado) in self.tokens and not(lookAheadProduction.isalpha())):
@@ -390,6 +424,12 @@ class Reader:
                         newTipoVar = variableProduction_Enum(
                             tipoVar2.OR)
                         newTipoVar.setNombreTerminal("|")
+                        arrayProdTemp.append(newTipoVar)
+                        produccionFinal.append(produccionActual)
+                        acumulado = ""
+                    elif(produccionActual == "#"):
+                        newTipoVar = variableProduction_Enum(tipoVar2.APPEND)
+                        newTipoVar.setNombreTerminal("#")
                         arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
