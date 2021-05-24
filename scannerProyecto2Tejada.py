@@ -1,5 +1,6 @@
 
 
+
 # Nombre: Alejandro Tejada
 # Curso: Diseño lenguajes de programacion
 # Fecha: Abril 2021
@@ -152,6 +153,10 @@ class Scanner():
                 token = self.getFinalToken(S)
                 if(len(token) == 0):
                     print("TOKEN INVALIDO del valor  ", acumulador)
+                    newToken = tokenForScanner()
+                    newToken.setTipoToken("ERROR")
+                    newToken.setValor(acumulador)
+                    self.tokensLeidos.append(newToken)
                     break
                 else:
                     pp("El token del valor ----> " +
@@ -174,6 +179,10 @@ class Scanner():
                     print(acumulador)
                     S = [0]
                     S2 = [0]
+                    newToken = tokenForScanner()
+                    newToken.setTipoToken("ERROR")
+                    newToken.setValor(acumulador)
+                    self.tokensLeidos.append(newToken)
                     acumulador = ""
                     contador -= 1
                 else:
@@ -192,6 +201,10 @@ class Scanner():
                 print(acumulador)
                 S = [0]
                 S2 = [0]
+                newToken = tokenForScanner()
+                newToken.setTipoToken("ERROR")
+                newToken.setValor(acumulador)
+                self.tokensLeidos.append(newToken)
                 acumulador = ""
 
             contador += 1
@@ -202,3 +215,4 @@ class Scanner():
 
 
 objeSCanner = Scanner()
+
