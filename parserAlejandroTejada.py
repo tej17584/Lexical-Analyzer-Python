@@ -44,8 +44,8 @@ class parserFinal():
             if(self.tokensScaneados[x].getNumeracion() != ""):
                 self.tokensScaneadosV2.append(self.tokensScaneados[x])
 
-        for x in self.tokensScaneadosV2:
-            print(x.getAllValues())
+        """ for x in self.tokensScaneadosV2:
+            print(x.getAllValues()) """
 
     def Expect(self, tokenId):
         if(self.lookAheadToken.getNumeracion() == tokenId):
@@ -56,13 +56,16 @@ class parserFinal():
 
     def GetNewToken(self):
         self.lastToken = self.lookAheadToken
-        self.lookAheadToken = self.tokensScaneadosV2.pop()
+        if(len(self.tokensScaneadosV2) > 0):
+            self.lookAheadToken = self.tokensScaneadosV2.pop()
+        else:
+            self.lookAheadToken = self.lookAheadToken
 
     def getNumber(self):
-        if(self.lookAheadToken.getValor() != "+" and self.lookAheadToken.getValor() != "-" and self.lookAheadToken.getValor() != "*" and self.lookAheadToken.getValor() != "/"):
-            return int(self.lookAheadToken.getValor())
+        if(self.lookAheadToken.getValor() != "+" and self.lookAheadToken.getValor() != "-" and self.lookAheadToken.getValor() != "*" and self.lookAheadToken.getValor() != "/" and self.lookAheadToken.getValor() != ";"):
+            return int(self.lastToken.getValor())
         else:
-            return self.lookAheadToken.getValor()
+            return self.lastToken.getValor()
 
     def getVar(self):
         return self.lookAheadToken.getValor()
@@ -92,10 +95,14 @@ class parserFinal():
             if(self.lookAheadToken.getNumeracion() == 4):
                 self.Expect(4)
                 result2 = self.Term(result2)
+                result1 = int(result1)
+                result2 = int(result2)
                 result1 += result2
             elif(self.lookAheadToken.getNumeracion() == 5):
                 self.Expect(5)
                 result2 = self.Term(result2)
+                result1 = int(result1)
+                result2 = int(result2)
                 result1 -= result2
 
         result = result1
@@ -109,10 +116,14 @@ class parserFinal():
             if(self.lookAheadToken.getNumeracion() == 6):
                 self.Expect(6)
                 result2 = self.Factor(result2)
+                result1 = int(result1)
+                result2 = int(result2)
                 result1 *= result2
             elif(self.lookAheadToken.getNumeracion() == 7):
                 self.Expect(7)
                 result2 = self.Factor(result2)
+                result1 = int(result1)
+                result2 = int(result2)
                 result1 /= result2
 
         result = result1
