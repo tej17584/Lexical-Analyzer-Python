@@ -10,6 +10,7 @@
 # imports
 import pickle
 from pprint import pprint as pp
+from scannerToken import *
 
 
 class Scanner():
@@ -155,7 +156,10 @@ class Scanner():
                 else:
                     pp("El token del valor ----> " +
                        acumulador + " <--- es: " + token)
-                    self.tokensLeidos.append(token)
+                    newToken = tokenForScanner()
+                    newToken.setTipoToken(token)
+                    newToken.setValor(acumulador)
+                    self.tokensLeidos.append(newToken)
                     break
             caracterValuar = self.stringPrueba[contador]
             caracterValuar2 = self.stringPrueba[contador+1]
@@ -177,8 +181,11 @@ class Scanner():
                        acumulador + " <---- es: " + token)
                     S = [0]
                     S2 = [0]
+                    newToken = tokenForScanner()
+                    newToken.setTipoToken(token)
+                    newToken.setValor(acumulador)
+                    self.tokensLeidos.append(newToken)
                     acumulador = ""
-                    self.tokensLeidos.append(token)
                     # contador += 1
             elif(len(S) == 0):
                 print("TOKEN INVALIDO del valor: ")
