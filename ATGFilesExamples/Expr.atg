@@ -64,9 +64,5 @@ PRODUCTIONS
    Number<out result> = number # (. result = self.getNumber() .)
    .
 
-/*
-   Ident<out name> = ident # (. name = self.getVar() .)
-   .
-*/
 
 END Expr.
