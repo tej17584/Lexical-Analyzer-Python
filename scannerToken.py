@@ -10,15 +10,15 @@ V 1.0
 
 class tokenForScanner:
     def __init__(self):
-        self.tipo = ""
+        self.tipoToken = ""
         self.numeracion = ""
         self.valor = ""
 
-    def getTipo(self):
-        return self.tipo
+    def getTipoToken(self):
+        return self.tipoToken
 
-    def setTipo(self, tipo):
-        self.tipo = tipo
+    def setTipoToken(self, tipo):
+        self.tipoToken = tipo
 
     def getNumeracion(self):
         return self.numeracion
@@ -33,4 +33,4 @@ class tokenForScanner:
         self.valor = valor
 
     def getAllValues(self):
-        return [self.tipo, self.numeracion, self.valor]
+        return [self.tipoToken, self.valor, self.numeracion]
