@@ -239,6 +239,63 @@ class Reader:
                     break
         print("############################", self.dictPrimeraPos)
 
+    def addPrimeraPosObjects(self):
+        """
+        Coloca la primera pos dentro de los objetos que necesitamos iterar
+        *@param ninguno: ninguno
+        """
+        for key in self.diccionarioProduccionesFinal:
+            estoyOr = False
+            yaAgregue = False
+            definicion = self.diccionarioProduccionesFinal[key]
+            # print("key")
+            # print(key)
+            for objProdIndex in range(len(definicion)):
+                #     print(definicion[objProdIndex].getTipoCharProd())
+                # print()
+                # print()
+                objProdActual = definicion[objProdIndex]
+                objProdFuturo = ""
+                if(objProdIndex != len(definicion)-1):
+                    objProdFuturo = definicion[objProdIndex+1]
+                if(objProdActual.getTipoVariable() == "LENCERRADO_WHILE" and objProdFuturo.getTipoVariable() == "NOTERMINAL"):
+                    for i in self.dictPrimeraPos[objProdFuturo.getNombreNoTerminal()]:
+                        objProdActual.setAddPrimeraPos(i)
+                    break
+                elif(objProdActual.getTipoVariable() == "LENCERRADO_OR" and objProdFuturo.getTipoVariable() == "NOTERMINAL"):
+                    for i in self.dictPrimeraPos[objProdFuturo.getNombreNoTerminal()]:
+                        objProdActual.setAddPrimeraPos(i)
+                elif(objProdActual.getTipoVariable() == "LENCERRADO_WHILE" and objProdFuturo.getTipoVariable() == "LENCERRADO_OR"):
+                    for i in range(objProdIndex+1, len(definicion)):
+                        if(estoyOr and yaAgregue == False):
+                            if(definicion[i].getTipoVariable() == "TERMINAL" or definicion[i].getTipoVariable() == "NOTERMINAL"):
+                                yaAgregue == True
+                                if(definicion[i].getTipoVariable() == "TERMINAL"):
+                                    defi = definicion[i].getPrimeraPos()
+                                    for defiPos in defi:
+                                        objProdActual.setAddPrimeraPos(defiPos)
+                        elif(definicion[i].getTipoVariable() == "LENCERRADO_OR"):
+                            estoyOr = True
+                        elif(definicion[i].getTipoVariable() == "ROR"):
+                            estoyOr = False
+
+                        if(objProdActual.getTipoVariable() == "RENCERRADOL"):
+                            break
+                elif(objProdActual.getTipoVariable() == "LENCERRADO_OR" and objProdFuturo.getTipoVariable() == "TERMINAL"):
+                    for i in objProdFuturo.getPrimeraPos():
+                        objProdActual.setAddPrimeraPos(i)
+                elif(objProdActual.getTipoVariable() == "LENCERRADO_CORCHETE" and objProdFuturo.getTipoVariable() == "TERMINAL"):
+                    for i in objProdFuturo.getPrimeraPos():
+                        objProdActual.setAddPrimeraPos(i)
+        for i, proddd in self.diccionarioProduccionesFinal.items():
+            print(i)
+            for prodobj in proddd:
+                print(prodobj.getParametroGeneral())
+            print()
+            print()
+            print()
+            print()
+
     def getProductionCompose(self, line, indice, lastProduction):
         """
         Retorna la produccion pero compuesta, es decir que a partir del line, indice y la produccion
@@ -1098,7 +1155,9 @@ class Reader:
         # ? ----------------------------------------------------CREACION DE PRODUCCIONES---------------------------------------------------
         self.construccionProducciones()
         self.primeraPosProducciones()
-        cont = 0
+        self.addPrimeraPosObjects()
+
+        """ cont = 0
         for key, produccion in self.diccionarioProduccionesFinal.items():
             cont += 1
             # print(key)
@@ -1111,7 +1170,7 @@ class Reader:
                 print(index.getParametroGeneral())
             print()
             # if(cont == 4):
-            #     break
+            #     break """
         # ? ----------------------------------------------------FINALIZA CREACION DE PRODUCCIONES---------------------------------------------------
         # print(self.jsonFinal["CHARACTERS"])
         """ for llave, valor in self.jsonFinal["TOKENS"].items():
