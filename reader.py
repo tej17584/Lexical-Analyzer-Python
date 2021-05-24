@@ -283,7 +283,7 @@ class Reader:
                         acumulado = ""
                     elif(esSintax):
                         isSintaxis += definicion[index]
-                    if(produccionActual == "(" and lookAheadProduction == "$"):
+                    elif(produccionActual == "(" and lookAheadProduction == "$"):
                         self.productionsBlocked.append(index)
                         self.productionsBlocked.append(index+1)
                         newTipoVar = variableProduction_Enum(
@@ -435,10 +435,7 @@ class Reader:
                         acumulado = ""
             print("-----FIN-----")
             print(llave)
-            # print(acumulado)
-            # print(produccionFinal)
             print()
-            # localDictProductions[key] = nuevoDiccionarioProd
             for obj in self.diccionarioProduccionesFinal[llave]:
                 print(obj.getTipoVariable() + " : " + obj.getParametroGeneral())
             print()
