@@ -203,32 +203,38 @@ class Reader:
             terminalBool = False
             for index in range(len(self.diccionarioProduccionesFinal[x])):
                 llave = self.diccionarioProduccionesFinal[x][index]
-                arrayTemp = []
+                arrayTemporalProducciones = []
                 # si la variable es de tipo NO terminal, significa que lo primero que necesitamos
                 # es la primera pos
                 if llave.getTipoVariable() == "NOTERMINAL":
                     self.dictPrimeraPos[x] = self.dictPrimeraPos[llave.getNombreNoTerminal(
                     )]
+                    # agregamos la lllave del no terminal
                     break
                 elif llave.getTipoVariable() == "TERMINAL":
-                    indexLlave = llave.getNombreTerminal()
-                    arrayTemp.append(llave.getNombreTerminal())
-                    self.dictPrimeraPos[x] = arrayTemp
+                    # el array temporal tiene la llave del nombre del terminal
+                    arrayTemporalProducciones.append(llave.getNombreTerminal())
+                    self.dictPrimeraPos[x] = arrayTemporalProducciones
+                    # agregamos al dict d eprimera pos el array temporal de las producciones
                     for i in range(index+1, len(self.diccionarioProduccionesFinal[x])):
-                        llave2 = self.diccionarioProduccionesFinal[x][i]
-                        if(isOrProduction and llave2.getTipoVariable() != "RENCERRADO_OR"):
-                            if(llave2.getTipoVariable() == "NOTERMINAL" and noTerminalBool == False):
+                        # El indice 2 contiene las producciones finales
+                        Indice2 = self.diccionarioProduccionesFinal[x][i]
+                        if(isOrProduction and Indice2.getTipoVariable() != "RENCERRADO_OR"):
+                            # si es un Rencerrado
+                            if(Indice2.getTipoVariable() == "NOTERMINAL" and noTerminalBool == False):
                                 noTerminalBool = True
-                                for primPos in self.dictPrimeraPos[llave2.getNombreNoTerminal()]:
-                                    arrayTemp.append(primPos)
-                                    self.dictPrimeraPos[x] = arrayTemp
-                            if(llave2.getTipoVariable() == "TERMINAL" and terminalBool == False):
+                                for primPos in self.dictPrimeraPos[Indice2.getNombreNoTerminal()]:
+                                    arrayTemporalProducciones.append(primPos)
+                                    self.dictPrimeraPos[x] = arrayTemporalProducciones
+                            if(Indice2.getTipoVariable() == "TERMINAL" and terminalBool == False):
                                 terminalBool = True
-                                arrayTemp.append(llave2.getNombreTerminal())
-                                self.dictPrimeraPos[x] = arrayTemp
-                        elif(llave2.getTipoVariable() == "LENCERRADO_OR"):
+                                arrayTemporalProducciones.append(
+                                    Indice2.getNombreTerminal())
+                                self.dictPrimeraPos[x] = arrayTemporalProducciones
+                        # de lo contrario si es un LencerradoOR
+                        elif(Indice2.getTipoVariable() == "LENCERRADO_OR"):
                             isOrProduction = True
-                        elif(llave2.getTipoVariable() == "RENCERRADO_OR"):
+                        elif(Indice2.getTipoVariable() == "RENCERRADO_OR"):
                             isOrProduction = False
                     break
         print("############################", self.dictPrimeraPos)
