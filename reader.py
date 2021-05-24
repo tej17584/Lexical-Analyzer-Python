@@ -48,6 +48,8 @@ class Reader:
         self.dictPrimeraPos = {}  # esta es la primera pos
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
         self.diccionarioProduccionesFinal = {}
+        self.diccionarioTokenValue = {}
+        self.contadorGlobalTokens = 1
         self.readDocumentAndPoblateStream()
         self.readDocument()
 
@@ -287,14 +289,13 @@ class Reader:
                 elif(objProdActual.getTipoVariable() == "LENCERRADO_CORCHETE" and objProdFuturo.getTipoVariable() == "TERMINAL"):
                     for i in objProdFuturo.getPrimeraPos():
                         objProdActual.setAddPrimeraPos(i)
-        for i, proddd in self.diccionarioProduccionesFinal.items():
+        """ for i, proddd in self.diccionarioProduccionesFinal.items():
             print(i)
             for prodobj in proddd:
                 print(prodobj.getParametroGeneral())
             print()
             print()
-            print()
-            print()
+            print() """
 
     def getProductionCompose(self, line, indice, lastProduction):
         """
@@ -427,7 +428,10 @@ class Reader:
                                 tipoVar2.TERMINAL)
                             newTipoVar.setNombreTerminal(token)
                             newTipoVar.setAddPrimeraPos(token)
-                            # print("token: ", token)
+                            # appendemaos al diccionario de tokens
+                            if(numToken == self.contadorGlobalTokens):
+                                self.diccionarioTokenValue[token] = self.contadorGlobalTokens
+                                self.contadorGlobalTokens += 1
                             newTipoVar.setOrdenToken(numToken)
                             arrayProdTemp.append(newTipoVar)
                             token = ""
@@ -500,6 +504,10 @@ class Reader:
                         # print("token: ", acumulado)
                         newTipoVar.setAddPrimeraPos(acumuladoNuevo)
                         newTipoVar.setOrdenToken(numToken)
+                        # agregamos al dict global
+                        if(numToken == self.contadorGlobalTokens):
+                            self.diccionarioTokenValue[acumuladoNuevo] = self.contadorGlobalTokens
+                            self.contadorGlobalTokens += 1
                         arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(acumuladoNuevo)
                         acumulado = ""
@@ -841,6 +849,8 @@ class Reader:
                     tokenName = str(tokenSplit[0].replace(" ", ""))
                     tokenValue = tokenSplit[1]
                     self.tokens.append(tokenName)
+                    self.diccionarioTokenValue[tokenName] = self.contadorGlobalTokens
+                    self.contadorGlobalTokens += 1
                     # removemos el punto del character
                     # además de remover verificamos que no sea de doble línea
                     if(tokenValue[len(tokenValue)-1] == "."):
@@ -1156,13 +1166,16 @@ class Reader:
         self.construccionProducciones()
         self.primeraPosProducciones()
         self.addPrimeraPosObjects()
-
-        """ cont = 0
+        print("-------------------------------- TOKENS MAPEADOS")
+        for llave, valor in self.diccionarioTokenValue.items():
+            print(f'Llave del token:  {llave} y el valor es: {valor}')
+        print("conviertiendo a postfix las cosas")
+        cont = 0
         for key, produccion in self.diccionarioProduccionesFinal.items():
             cont += 1
             # print(key)
             # print(produccion)
-            postfixInstProd = ConversionPostfixTokens()
+            postfixInstProd = ConversionPostfixScanner()
             postfixProd = postfixInstProd.infixToPostfixProducciones(
                 produccion)
             # print(postfixProd)
@@ -1170,7 +1183,7 @@ class Reader:
                 print(index.getParametroGeneral())
             print()
             # if(cont == 4):
-            #     break """
+            #     break
         # ? ----------------------------------------------------FINALIZA CREACION DE PRODUCCIONES---------------------------------------------------
         # print(self.jsonFinal["CHARACTERS"])
         """ for llave, valor in self.jsonFinal["TOKENS"].items():
