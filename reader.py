@@ -45,6 +45,7 @@ class Reader:
         self.tokens = []
         self.acumuladorExcept = ""  # el acumulador para saber que hay que exceptuar
         self.boolComillasPunto = False
+        self.primeraPos = {}  # esta es la primera pos
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
         self.diccionarioProduccionesFinal = {}
         self.readDocumentAndPoblateStream()
@@ -129,7 +130,7 @@ class Reader:
     def productionMultiLine(self, lineadelProduction):
         """
         Retorna la produccion multilinea. Este método es complementario
-        *@param lineadelProduction:  la linea de la produccion 
+        *@param lineadelProduction:  la linea de la produccion
         """
         newProductionValue = ""
         # obtenemos la linea del token general
@@ -189,6 +190,49 @@ class Reader:
 
         return newProduction
 
+    def primera(self):
+        for x in reversed(self.producciones):
+            # print(x)
+            # print("----")
+            soyOR = False
+            yaEntreNT = False
+            yaEntreT = False
+            for index in range(len(self.diccionarioProduccionesFinal[x])):
+                # print(index)
+                llave = self.diccionarioProduccionesFinal[x][index]
+                # print(llave.getParametroGeneral())
+                arrayTemp = []
+                if llave.getTipoVariable() == "NOTERMINAL":
+                    self.primeraPos[x] = self.primeraPos[llave.getNombreNoTerminal()]
+                    break
+                elif llave.getTipoVariable() == "TERMINAL":
+                    indexLlave = llave.getNombreTerminal()
+                    #print("indexLlave: " + indexLlave)
+                    arrayTemp.append(llave.getNombreTerminal())
+                    self.primeraPos[x] = arrayTemp
+                    for i in range(index+1, len(self.diccionarioProduccionesFinal[x])):
+                        #print("i actual")
+                        # print(
+                        #    self.diccionarioProduccionesFinal[x][i].getParametroGeneral())
+                        llave2 = self.diccionarioProduccionesFinal[x][i]
+                        if(soyOR and llave2.getTipoVariable() != "RENCERRADO_OR"):
+                            if(llave2.getTipoVariable() == "NOTERMINAL" and yaEntreNT == False):
+                                yaEntreNT = True
+                                for primPos in self.primeraPos[llave2.getNombreNoTerminal()]:
+                                    arrayTemp.append(primPos)
+                                    self.primeraPos[x] = arrayTemp
+                            if(llave2.getTipoVariable() == "TERMINAL" and yaEntreT == False):
+                                yaEntreT = True
+                                arrayTemp.append(llave2.getNombreTerminal())
+                                self.primeraPos[x] = arrayTemp
+                        elif(llave2.getTipoVariable() == "LENCERRADO_OR"):
+                            soyOR = True
+                        elif(llave2.getTipoVariable() == "RENCERRADO_OR"):
+                            soyOR = False
+                    break
+
+        print("############################", self.primeraPos)
+
     def getProductionCompose(self, line, indice, lastProduction):
         """
         Retorna la produccion pero compuesta, es decir que a partir del line, indice y la produccion
@@ -229,7 +273,7 @@ class Reader:
         # print(self.producciones)
         # print(self.tokens)
         for llave in localDictProductions:
-            print(llave)
+            # print(llave)
             definicion = localDictProductions[llave]
             # este array es la nueva produccion
             produccionFinal = []
@@ -353,7 +397,7 @@ class Reader:
                     elif(self.replaceProduccion(acumulado) in self.producciones):
                         produccion = self.getProductionCompose(
                             definicion, index, acumulado)
-                        #produccionFinal.append(produccion.replace(" ", ""))
+                        # produccionFinal.append(produccion.replace(" ", ""))
                         produccion = self.replaceProduccion(produccion)
                         newTipoVar = variableProduction_Enum(
                             tipoVar2.NOTERMINAL)
@@ -379,7 +423,7 @@ class Reader:
                     elif(self.replaceProduccion(acumulado) in self.tokens and not(lookAheadProduction.isalpha())):
                         # print("token")
                         # print(acumulado)
-                        #produccionFinal.append(acumulado.replace(" ", ""))
+                        # produccionFinal.append(acumulado.replace(" ", ""))
                         acumuladoNuevo = self.replaceProduccion(acumulado)
                         if(acumuladoNuevo in self.tokens):
                             numToken = self.tokens.index(acumuladoNuevo) + 1
@@ -435,13 +479,11 @@ class Reader:
                         arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
-            print("-----FIN-----")
-            print(llave)
-            print()
-            #for obj in self.diccionarioProduccionesFinal[llave]:
-                #print(obj.getTipoVariable() , " : " , obj.getParametroGeneral())
-            print()
-            print()
+            # print("-----FIN-----")
+            # print(llave)
+            # print()
+            # for obj in self.diccionarioProduccionesFinal[llave]:
+            # print(obj.getTipoVariable() , " : " , obj.getParametroGeneral())
 
     def replaceCharValues(self, charValue):
         acumulable = ""
@@ -749,7 +791,7 @@ class Reader:
             elif((self.isChar == False) and (self.isKeyword == False) and
                  (self.isToken == False) and (self.isProduction == True)
                  and count2 not in self.blockedLines):
-                #print("soy produccion")
+                # print("soy produccion")
                 # pp(line)
                 productionSplit = line.split("=", 1)
                 if(type(productionSplit) != None and len(productionSplit) > 1
@@ -758,16 +800,19 @@ class Reader:
                     productionName = str(productionSplit[0])
                     productionName = productionName.replace("  ", "")
                     productionValue = productionSplit[1]
+                    varFinal = ""
                     if("<" in productionName and ">" in productionName):
                         acumulado = ""
                         for i in productionName:
                             if(i != "<"):
                                 acumulado += i
                             else:
+                                varFinal = acumulado.replace(" ", "")
                                 self.producciones.append(
                                     acumulado.replace(" ", ""))
                                 break
                     else:
+                        varFinal = productionName.replace(" ", "")
                         self.producciones.append(
                             productionName.replace(" ", ""))
                     # además de remover verificamos que no sea de doble línea
@@ -778,7 +823,8 @@ class Reader:
                         productionValue = productionValue.replace("  ", "")
                         productionValue = productionValue.replace("(. ", "(.")
                         productionValue = productionValue.replace(" .)", ".)")
-                        localProductDict[productionName] = productionValue
+                        localProductDict[varFinal] = productionValue
+                        # localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
                     else:  # si por el contrario no termina en punto iteramos
 
@@ -789,7 +835,8 @@ class Reader:
                         productionValue = productionValue.replace("  ", "")
                         productionValue = productionValue.replace("(. ", "(.")
                         productionValue = productionValue.replace(" .)", ".)")
-                        localProductDict[productionName] = productionValue
+                        localProductDict[varFinal] = productionValue
+                        # localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
             # ? -----------------------------------------FINALIZA PRODUCTIONS SECTION ----------------------------------------------------------------
                     #
@@ -1042,20 +1089,18 @@ class Reader:
         # ? ----------------------------------------------------FINALIZA CREACION TOKENS---------------------------------------------------
         # ? ----------------------------------------------------CREACION DE PRODUCCIONES---------------------------------------------------
         self.construccionProducciones()
+        self.primera()
         cont = 0
         for key, produccion in self.diccionarioProduccionesFinal.items():
             cont += 1
-            #print(key)
-            #print(produccion)
+            # print(key)
+            # print(produccion)
             postfixInstProd = ConversionPostfixTokens()
             postfixProd = postfixInstProd.infixToPostfixProducciones(
                 produccion)
             # print(postfixProd)
             for index in postfixProd:
                 print(index.getParametroGeneral())
-            print()
-            print()
-            print()
             print()
             # if(cont == 4):
             #     break
