@@ -96,4 +96,4 @@ class variableProduction_Enum():
         elif (self.accion != "" and self.nombreNT == "" and self.nombreT == ""):
             return self.accion """
 
-        return [self.tipoVariable.name, self.nombreT, self.nombreNT, self.accion]
+        return [self.tipoVariable.name, self.nombreT, self.nombreNT, self.accion, self.parameters]
