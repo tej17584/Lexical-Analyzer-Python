@@ -14,6 +14,7 @@ from funciones import funciones
 from pprint import pprint as pp
 from posftixEvaluador import *
 from tipoVar import *
+from postFixTokensScanner import *
 import re
 
 
@@ -23,7 +24,7 @@ class Reader:
     """
 
     def __init__(self) -> None:
-        self.rutaFile = "ATGFilesExamples\Calc\Calc.atg"
+        self.rutaFile = "ATGFilesExamples\Expr.atg"
         self.streamCompleto = ""
         self.dictArchivoEntrada = ""
         self.lineasArchivo = []
@@ -291,6 +292,7 @@ class Reader:
                         newTipoVar.setNombreTerminal("($")
                         arrayProdTemp.append(newTipoVar)
                         produccionFinal.append("($")
+                        acumulado = ""
                     elif(produccionActual == "$" and lookAheadProduction == ")"):
                         # print("sintax")
                         # print(sintax)
@@ -436,8 +438,8 @@ class Reader:
             print("-----FIN-----")
             print(llave)
             print()
-            for obj in self.diccionarioProduccionesFinal[llave]:
-                print(obj.getTipoVariable() + " : " + obj.getParametroGeneral())
+            #for obj in self.diccionarioProduccionesFinal[llave]:
+                #print(obj.getTipoVariable() , " : " , obj.getParametroGeneral())
             print()
             print()
 
@@ -1040,6 +1042,23 @@ class Reader:
         # ? ----------------------------------------------------FINALIZA CREACION TOKENS---------------------------------------------------
         # ? ----------------------------------------------------CREACION DE PRODUCCIONES---------------------------------------------------
         self.construccionProducciones()
+        cont = 0
+        for key, produccion in self.diccionarioProduccionesFinal.items():
+            cont += 1
+            #print(key)
+            #print(produccion)
+            postfixInstProd = ConversionPostfixTokens()
+            postfixProd = postfixInstProd.infixToPostfixProducciones(
+                produccion)
+            # print(postfixProd)
+            for index in postfixProd:
+                print(index.getParametroGeneral())
+            print()
+            print()
+            print()
+            print()
+            # if(cont == 4):
+            #     break
         # ? ----------------------------------------------------FINALIZA CREACION DE PRODUCCIONES---------------------------------------------------
         # print(self.jsonFinal["CHARACTERS"])
         """ for llave, valor in self.jsonFinal["TOKENS"].items():
