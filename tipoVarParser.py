@@ -89,9 +89,11 @@ class variableProduction_Enum():
         self.primeraPos.append(parametro)
 
     def getParametroGeneral(self):
-        if(self.accion == "" and self.nombreNT == "" and self.nombreT != ""):
+        """ if(self.accion == "" and self.nombreNT == "" and self.nombreT != ""):
             return self.nombreT
         elif(self.accion == "" and self.nombreNT != "" and self.nombreT == ""):
             return self.nombreNT
         elif (self.accion != "" and self.nombreNT == "" and self.nombreT == ""):
-            return self.accion
+            return self.accion """
+
+        return [self.tipoVariable.name, self.nombreT, self.nombreNT, self.accion]
