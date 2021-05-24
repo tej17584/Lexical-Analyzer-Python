@@ -16,6 +16,7 @@ from posftixEvaluador import *
 from tipoVar import *
 from postFixTokensScanner import *
 import re
+import pickle
 
 
 class Reader:
@@ -1166,9 +1167,14 @@ class Reader:
         self.construccionProducciones()
         self.primeraPosProducciones()
         self.addPrimeraPosObjects()
-        print("-------------------------------- TOKENS MAPEADOS")
+        # Hacemos dump del diccionario de tokens
+        filename = 'diccionarioTokensMapeados'
+        outfile = open(filename, 'wb')
+        pickle.dump(self.diccionarioTokenValue, outfile)
+        outfile.close()
+        """ print("-------------------------------- TOKENS MAPEADOS")
         for llave, valor in self.diccionarioTokenValue.items():
-            print(f'Llave del token:  {llave} y el valor es: {valor}')
+            print(f'Llave del token:  {llave} y el valor es: {valor}') """
         print("conviertiendo a postfix las cosas")
         cont = 0
         for key, produccion in self.diccionarioProduccionesFinal.items():
