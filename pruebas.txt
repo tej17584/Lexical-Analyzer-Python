@@ -1,1 +1,1 @@
-holo 66 +150 alejandro especial 150
+5+5*8+8-10; 5+5;
