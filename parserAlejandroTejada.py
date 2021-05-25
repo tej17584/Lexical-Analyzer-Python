@@ -39,7 +39,6 @@ class parserFinal():
                 elif(valoresToken[0] == "ERROR" and (valoresToken[1] == llave)):
                     x.setNumeracion(valor)
 
-        print("--------tokens finales")
         for x in range(len(self.tokensScaneados)):
             if(self.tokensScaneados[x].getNumeracion() != ""):
                 self.tokensScaneadosV2.append(self.tokensScaneados[x])
@@ -49,7 +48,7 @@ class parserFinal():
 
     def Expect(self, tokenId):
         if(self.lookAheadToken.getNumeracion() == tokenId):
-            print("llamare un nuevo token con tokenID: ", tokenId)
+            #print("llamare un nuevo token con tokenID: ", tokenId)
             self.GetNewToken()
         else:
             self.printERROROnScreen(tokenId)
@@ -78,14 +77,13 @@ class parserFinal():
     def StatSeq(self):
         while (self.lookAheadToken.getNumeracion() == 5 or self.lookAheadToken.getNumeracion() == 2 or self.lookAheadToken.getNumeracion() == 8):
             self.Stat()
-            print("llegue aca")
             self.Expect(3)
 
     def Stat(self):
         value = 0
         # self.Expresssion(value)
         value = self.Expression(value)
-        print("El valor de vlaue es: ", value)
+        print("El Resultado de la operacion es: ", value)
 
     def Expression(self, result):
         result1 = 0
