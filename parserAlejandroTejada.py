@@ -56,7 +56,7 @@ class parserFinal():
     def GetNewToken(self):
         self.lastToken = self.lookAheadToken
         if(len(self.tokensScaneadosV2) > 0):
-            self.lookAheadToken = self.tokensScaneadosV2.pop()
+            self.lookAheadToken = self.tokensScaneadosV2.pop(0)
         else:
             self.lookAheadToken = self.lookAheadToken
 
@@ -86,8 +86,7 @@ class parserFinal():
         print("El Resultado de la operacion es: ", value)
 
     def Expression(self, result):
-        result1 = 0
-        result2 = 0
+        result1, result2 = 0, 0
         result1 = self.Term(result1)
         while(self.lookAheadToken.getNumeracion() == 4 or self.lookAheadToken.getNumeracion() == 5):
             if(self.lookAheadToken.getNumeracion() == 4):
@@ -107,8 +106,7 @@ class parserFinal():
         return result
 
     def Term(self, result):
-        result1 = 1
-        result2 = 1
+        result1, result2 = 1, 1
         result1 = self.Factor(result1)
         while(self.lookAheadToken.getNumeracion() == 6 or self.lookAheadToken.getNumeracion() == 7):
             if(self.lookAheadToken.getNumeracion() == 6):
