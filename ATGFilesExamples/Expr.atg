@@ -36,7 +36,7 @@ PRODUCTIONS
     StatSeq = {Stat # ";"} .
 
     Stat =                          (. value = 0 .) #
-      Expression<out value>    #    (. print (value) .)
+      Expression<out value>    #    (. print("El Resultado de la operacion es: ", value) .)
       .
 
     Expression<out result> =       (. result1 , result2 = 0, 0 .) #
