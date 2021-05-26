@@ -51,6 +51,8 @@ class Reader:
         self.diccionarioProduccionesFinal = {}
         self.diccionarioTokenValue = {}
         self.contadorGlobalTokens = 1
+        self.diccionarioProdFinal2 = {}
+        self.cantTabs = 1
         self.readDocumentAndPoblateStream()
         self.readDocument()
 
@@ -204,8 +206,8 @@ class Reader:
             isOrProduction = False
             noTerminalBool = False
             terminalBool = False
-            for index in range(len(self.diccionarioProduccionesFinal[x])):
-                llave = self.diccionarioProduccionesFinal[x][index]
+            for index in range(len(self.diccionarioProdFinal2[x])):
+                llave = self.diccionarioProdFinal2[x][index]
                 arrayTemporalProducciones = []
                 # si la variable es de tipo NO terminal, significa que lo primero que necesitamos
                 # es la primera pos
@@ -219,9 +221,9 @@ class Reader:
                     arrayTemporalProducciones.append(llave.getNombreTerminal())
                     self.dictPrimeraPos[x] = arrayTemporalProducciones
                     # agregamos al dict d eprimera pos el array temporal de las producciones
-                    for i in range(index+1, len(self.diccionarioProduccionesFinal[x])):
+                    for i in range(index+1, len(self.diccionarioProdFinal2[x])):
                         # El indice 2 contiene las producciones finales
-                        Indice2 = self.diccionarioProduccionesFinal[x][i]
+                        Indice2 = self.diccionarioProdFinal2[x][i]
                         if(isOrProduction and Indice2.getTipoVariable() != "RENCERRADO_OR"):
                             # si es un Rencerrado
                             if(Indice2.getTipoVariable() == "NOTERMINAL" and noTerminalBool == False):
@@ -353,8 +355,9 @@ class Reader:
             parametrosProduction = ""
             acumulado = ""
             exprecion = ""
-            self.diccionarioProduccionesFinal[llave] = []
-            arrayProdTemp = self.diccionarioProduccionesFinal[llave]
+            #self.diccionarioProduccionesFinal[llave] = []
+            #arrayProdTemp = self.diccionarioProduccionesFinal[llave]
+            arrayProdTemp = []
             self.productionsBlocked = []
             if("<" in llave and ">" in llave):
                 indexLlaveMenor = llave.find("<")
@@ -553,11 +556,36 @@ class Reader:
                         arrayProdTemp.append(newTipoVar)
                         produccionFinal.append(produccionActual)
                         acumulado = ""
-            # print("-----FIN-----")
-            # print(llave)
-            # print()
+            newArrayProduction = []
+            for objIndex in range(len(arrayProdTemp)):
+                productionActual = arrayProdTemp[objIndex]
+                if(objIndex == len(arrayProdTemp)-1):
+                    nextProduction = arrayProdTemp[objIndex]
+                else:
+                    nextProduction = arrayProdTemp[objIndex+1]
+                newArrayProduction.append(productionActual)
+                if(not isinstance(nextProduction, str)):
+                    if(
+                        (nextProduction.getTipoVariable() == "ACTION"
+                         or nextProduction.getTipoVariable() == "TERMINAL"
+                         or nextProduction.getTipoVariable() == "NOTERMINAL")
+                        and productionActual.getTipoVariable() != "OR"
+                        and productionActual.getTipoVariable() != "LENCERRADO_OR"
+                        and productionActual.getTipoVariable() != "LENCERRADO_CORCHETE"
+                        and productionActual.getTipoVariable() != "LENCERRADO_WHILE"
+                        and productionActual.getTipoVariable() != "NOMBREPROD"
+                        and objIndex != len(arrayProdTemp)-1
+                    ):
+                        tipoCharProd = variableProduction_Enum(tipoVar2.APPEND)
+                        tipoCharProd.setNombreTerminal("#")
+                        newArrayProduction.append(tipoCharProd)
             # for obj in self.diccionarioProduccionesFinal[llave]:
             # print(obj.getTipoVariable() , " : " , obj.getParametroGeneral())
+            self.diccionarioProduccionesFinal[llave] = newArrayProduction
+            keyLocal = llave.replace(" ", "")
+            if("<" in llave and ">" in llave):
+                keyLocal = llave[0:llave.find("<")].replace(" ", "")
+            self.diccionarioProdFinal2[keyLocal] = newArrayProduction
 
     def replaceCharValues(self, charValue):
         acumulable = ""
