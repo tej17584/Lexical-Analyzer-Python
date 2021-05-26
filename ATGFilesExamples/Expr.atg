@@ -49,7 +49,7 @@ PRODUCTIONS
     Term<out result> =              (. result1 , result2 = 1, 1 .)  #
        Factor<out result1>
        {   ($ '*' # Factor<out result2> # (. result1 = int(result1) .) (. result2 = int(result2) .)  (. result1 *= result2 .) $)
-        | ($ '/' # Factor<out result2>  # (. result1 /= result2 .) $)
+        | ($ '/' # Factor<out result2>  # (. result1 = int(result1) .) (. result2 = int(result2) .)  (. result1 /= result2 .) $)
        }          #                  (. result   = result1 .)
        .
 
