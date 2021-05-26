@@ -7,7 +7,6 @@ Propósito: Es el parser
 V 2.0
 """
 
-# zona de imports
 import pickle
 
 
@@ -43,9 +42,6 @@ class parserFinal():
             if(self.tokensScaneados[x].getNumeracion() != ""):
                 self.tokensScaneadosV2.append(self.tokensScaneados[x])
 
-        """ for x in self.tokensScaneadosV2:
-            print(x.getAllValues()) """
-
     def Expect(self, tokenId):
         if(self.lookAheadToken.getNumeracion() == tokenId):
             #print("llamare un nuevo token con tokenID: ", tokenId)
@@ -68,8 +64,6 @@ class parserFinal():
 
     def getVar(self):
         return self.lookAheadToken.getValor()
-
-    # ? ----------------------- ZONA FUNCIONES------------------------
 
     def Expr(self):
         self.StatSeq()
