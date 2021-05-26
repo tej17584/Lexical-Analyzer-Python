@@ -913,12 +913,13 @@ class Reader:
                             else:
                                 varFinal = acumulado.replace(" ", "")
                                 self.producciones.append(
-                                    acumulado.replace(" ", ""))
+                                    #acumulado.replace(" ", "")
+                                    varFinal)
                                 break
                     else:
                         varFinal = productionName.replace(" ", "")
                         self.producciones.append(
-                            productionName.replace(" ", ""))
+                            varFinal)
                     # además de remover verificamos que no sea de doble línea
                     if(productionValue[len(productionValue)-1] == "."):
                         productionValue = productionValue[0:len(
@@ -927,7 +928,7 @@ class Reader:
                         productionValue = productionValue.replace("  ", "")
                         productionValue = productionValue.replace("(. ", "(.")
                         productionValue = productionValue.replace(" .)", ".)")
-                        localProductDict[varFinal] = productionValue
+                        localProductDict[productionName] = productionValue
                         # localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
                     else:  # si por el contrario no termina en punto iteramos
@@ -939,7 +940,7 @@ class Reader:
                         productionValue = productionValue.replace("  ", "")
                         productionValue = productionValue.replace("(. ", "(.")
                         productionValue = productionValue.replace(" .)", ".)")
-                        localProductDict[varFinal] = productionValue
+                        localProductDict[productionName] = productionValue
                         # localProductDict[productionName] = productionValue
                         self.jsonFinal["PRODUCTIONS"].update(localProductDict)
             # ? -----------------------------------------FINALIZA PRODUCTIONS SECTION ----------------------------------------------------------------
