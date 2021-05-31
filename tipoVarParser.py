@@ -3,7 +3,7 @@ Nombre: Alejandro Tejada
 Curso: Diseño lenguajes de programacion
 Fecha: Abril 2021
 Programa: tipoVarParser.py
-Propósito: Este programa tiene todos los posibles 
+Propósito: Este programa tiene todos los posibles  tipos de objetos que tendra el PArser
 """
 #! zona de imports
 
