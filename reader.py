@@ -49,10 +49,10 @@ class Reader:
         self.dictPrimeraPos = {}  # esta es la primera pos
         self.bannedPositionsString = []  # estas son las posiciones banneadas de stirngs
         self.diccionarioProduccionesFinal = {}
+        self.diccionarioProduccionesFinalV2 = {}
+        self.tabsForFile = 1
         self.diccionarioTokenValue = {}
         self.contadorGlobalTokens = 1
-        self.diccionarioProdFinal2 = {}
-        self.cantTabs = 1
         self.readDocumentAndPoblateStream()
         self.readDocument()
 
@@ -206,8 +206,8 @@ class Reader:
             isOrProduction = False
             noTerminalBool = False
             terminalBool = False
-            for index in range(len(self.diccionarioProdFinal2[x])):
-                llave = self.diccionarioProdFinal2[x][index]
+            for index in range(len(self.diccionarioProduccionesFinalV2[x])):
+                llave = self.diccionarioProduccionesFinalV2[x][index]
                 arrayTemporalProducciones = []
                 # si la variable es de tipo NO terminal, significa que lo primero que necesitamos
                 # es la primera pos
@@ -221,9 +221,9 @@ class Reader:
                     arrayTemporalProducciones.append(llave.getNombreTerminal())
                     self.dictPrimeraPos[x] = arrayTemporalProducciones
                     # agregamos al dict d eprimera pos el array temporal de las producciones
-                    for i in range(index+1, len(self.diccionarioProdFinal2[x])):
+                    for i in range(index+1, len(self.diccionarioProduccionesFinalV2[x])):
                         # El indice 2 contiene las producciones finales
-                        Indice2 = self.diccionarioProdFinal2[x][i]
+                        Indice2 = self.diccionarioProduccionesFinalV2[x][i]
                         if(isOrProduction and Indice2.getTipoVariable() != "RENCERRADO_OR"):
                             # si es un Rencerrado
                             if(Indice2.getTipoVariable() == "NOTERMINAL" and noTerminalBool == False):
@@ -331,6 +331,209 @@ class Reader:
         productionAcumulada = productionAcumulada.replace(")", "")
 
         return productionAcumulada
+
+    def writeParser(self):
+        """
+        Crea el parser con partes quemadas y con partes de codigo
+        """
+        f = open("parserAlejandroTejada.py", "w", encoding="utf8")
+        f.write('''
+import pickle
+
+
+class parserAlejandro():
+
+    def __init__(self) -> None:
+        self.tokensScaneados = ""  # los tokens leidos
+        self.tokensScaneadosV2 = []
+        self.tokensMapeados = ""
+        self.lastToken = ""
+        self.lookAheadToken = ""
+        self.leerTokensAndMap()
+        self.Parser()
+
+    def leerTokensAndMap(self):
+        infile = open("arrayTokensLeidos", 'rb')
+        self.tokensScaneados = pickle.load(infile)
+        infile.close()
+
+        infile = open("diccionarioTokensMapeados", 'rb')
+        self.tokensMapeados = pickle.load(infile)
+        infile.close()
+
+        for llave, valor in self.tokensMapeados.items():
+            for x in self.tokensScaneados:
+                valoresToken = x.getAllValues()
+                if(llave == valoresToken[0]):
+                    x.setNumeracion(valor)
+                elif(valoresToken[0] == "ERROR" and (valoresToken[1] == llave)):
+                    x.setNumeracion(valor)
+
+        for x in range(len(self.tokensScaneados)):
+            if(self.tokensScaneados[x].getNumeracion() != ""):
+                self.tokensScaneadosV2.append(self.tokensScaneados[x])
+
+    def Expect(self, tokenId):
+        if(self.lookAheadToken.getNumeracion() == tokenId):
+            #print("llamare un nuevo token con tokenID: ", tokenId)
+            self.GetNewToken()
+        else:
+            self.printERROROnScreen(tokenId)
+
+    def GetNewToken(self):
+        self.lastToken = self.lookAheadToken
+        if(len(self.tokensScaneadosV2) > 0):
+            self.lookAheadToken = self.tokensScaneadosV2.pop(0)
+        else:
+            self.lookAheadToken = self.lookAheadToken
+
+    def getNumber(self):
+        if(self.lookAheadToken.getValor() != "+" and self.lookAheadToken.getValor() != "-" and self.lookAheadToken.getValor() != "*" and self.lookAheadToken.getValor() != "/" and self.lookAheadToken.getValor() != ";"):
+            return int(self.lastToken.getValor())
+        else:
+            return self.lastToken.getValor()
+
+    def getVar(self):
+        return self.lookAheadToken.getValor()
+
+        ''')
+        for key, produccion in self.diccionarioProduccionesFinal.items():
+            print(key)
+            f.write('\n')
+            # primero instanciamos el postfix y hacemos que pueda evaluar las expresiones
+            instanciaPostfix = ConversionPostfixScanner()
+            postfix = instanciaPostfix.infixToPostfixProducciones(
+                produccion)
+            # estas variables sirven para formar los valores de la escena y de los parametros
+            hasParameters = False
+            productionAnterior = False
+            for x in postfix:
+                print(x.getParametroGeneral())
+                if(x.getTipoVariable() == "NOMBREPROD"):
+                    productionAnterior = False
+                    if(x.getParameters() == ""):
+                        nombreNoTerminal = x.getNombreNoTerminal()
+                        f.write(" "*self.tabsForFile*4 +
+                                'def ' + nombreNoTerminal + '(self):')
+                    else:
+                        sizePrimeraPos = len(x.getParameters())
+                        f.write(" "*self.tabsForFile*4 + 'def ' + x.getNombreNoTerminal() +
+                                '(self, ' + x.getParameters()[4:sizePrimeraPos] + '):')
+                        hasParameters = True
+                    f.write('\n')
+                    self.tabsForFile += 1
+                elif(x.getTipoVariable() == "TERMINAL"):
+                    productionAnterior = False
+                    posToken = self.tokens.index(
+                        x.getNombreTerminal()) + 1
+                    f.write(" "*self.tabsForFile*4 +
+                            'self.Expect(' + str(posToken) + ')')
+                    f.write('\n')
+                elif(x.getTipoVariable() == "NOTERMINAL"):
+                    productionAnterior = False
+                    params = ""
+                    if(x.getParameters() != ""):
+                        sizePrimeraPos = len(x.getParameters())
+                        params = x.getParameters()[4:sizePrimeraPos]
+                        f.write(" "*self.tabsForFile*4 + params +
+                                ' = self.' + x.getNombreNoTerminal()+'(' + params + ')')
+                    else:
+                        f.write(" "*self.tabsForFile*4 +
+                                'self.' + x.getNombreNoTerminal()+'()')
+                    f.write('\n')
+                elif(x.getTipoVariable() == "RENCERRADO_WHILE"):
+                    # si nos topamos con una abertura de while
+                    productionAnterior = False
+                    self.tabsForFile -= 1
+                    f.write('\n')
+                elif(x.getTipoVariable() == "LENCERRADO_WHILE"):
+                    # si encontramos donde termina el while
+                    count, sintaxis, productionAnterior = 0, "", False
+                    sizePrimeraPos = len(x.getPrimeraPos())
+                    for i in x.getPrimeraPos():
+                        count += 1
+                        posToken = self.tokens.index(i) + 1
+                        sintaxis += "self.lookAheadToken.getNumeracion() == " + str(posToken)
+                        if(count < sizePrimeraPos):
+                            sintaxis += " or "
+                    # esta funcion escribe las tabs x4 (porque 4 espacios son una)
+                    f.write(" "*self.tabsForFile*4 + 'while ' + sintaxis + ':')
+                    self.tabsForFile += 1
+                    f.write('\n')
+                elif(x.getTipoVariable() == "RENCERRADO_OR"):
+                    # si nos topamos con un OR derecha, entonces hacemos que las tabs cambien
+                    productionAnterior = True
+                    self.tabsForFile -= 1
+                    f.write('\n')
+                elif(x.getTipoVariable() == "LENCERRADO_OR"):
+                    # si nos topamos con un tipo OR encerrado, entonces hacemos ese valor
+                    count, sintaxis = 0, ""
+                    sizePrimeraPos = len(x.getPrimeraPos())
+                    for w in x.getPrimeraPos():
+                        count += 1
+                        posToken = self.tokens.index(w) + 1
+                        sintaxis += "self.lookAheadToken.getNumeracion() == " + str(posToken)
+                        if(count < sizePrimeraPos):
+                            sintaxis += " or "
+                    #esto es para agregar ifs a las cosas
+                    condition = "if"
+                    if(productionAnterior):
+                        condition = "elif"
+                    f.write(" "*self.tabsForFile*4 +
+                            condition + '(' + sintaxis + '):')
+                    self.tabsForFile += 1
+                    f.write('\n')
+                elif(x.getTipoVariable() == "ACTION"):
+                    # si es una accion entonces escribimos la accion dentro del file
+                    productionAnterior = False
+                    f.write(" "*self.tabsForFile*4 + x.getAccion())
+                    f.write('\n')
+                elif(x.getTipoVariable() == "RENCERRADO_CORCHETE"):
+                    # si nos topamos con un corchete encerrado
+                    productionAnterior = False
+                    self.tabsForFile -= 1
+                    f.write('\n')
+                elif(x.getTipoVariable() == "LENCERRADO_CORCHETE"):
+                    # si nos topamos
+                    count, sintaxis, productionAnterior = 0, "", False
+                    sizePrimeraPos = len(x.getPrimeraPos())
+                    for w in x.getPrimeraPos():
+                        count += 1
+                        posToken = self.tokens.index(w) + 1
+                        sintaxis += "self.lookAheadToken.getNumeracion() == " + str(posToken)
+                        if(count < sizePrimeraPos):
+                            sintaxis += " or "
+                    f.write(" "*self.tabsForFile*4 + 'if(' + sintaxis + '):')
+                    self.tabsForFile += 1
+                    f.write('\n')
+
+            if(hasParameters):
+                f.write(" "*self.tabsForFile*4 + "return result")
+                f.write('\n')
+            self.tabsForFile -= 1
+        f.write('\n')
+
+        f.write('''
+    def Parser(self):
+        self.GetNewToken()
+        self.Expr()
+
+
+    def printERROROnScreen(self, tokenId):
+        for x in self.tokensScaneadosV2:
+            if(x.getNumeracion() == tokenId):
+                if(x.getTipoToken() == "ERROR"):
+                    errorPrint = x.getValor()
+                    print(f'{errorPrint} expected')
+                elif(x.getTipoToken() != "ERROR"):
+                    errorPrint = x.getTipoToken()
+                    print(f'{errorPrint} expected')
+
+
+obj = parserAlejandro()
+
+        ''')
+        f.close()
 
     def construccionProducciones(self):
         """
@@ -566,26 +769,20 @@ class Reader:
                 newArrayProduction.append(productionActual)
                 if(not isinstance(nextProduction, str)):
                     if(
-                        (nextProduction.getTipoVariable() == "ACTION"
-                         or nextProduction.getTipoVariable() == "TERMINAL"
-                         or nextProduction.getTipoVariable() == "NOTERMINAL")
-                        and productionActual.getTipoVariable() != "OR"
-                        and productionActual.getTipoVariable() != "LENCERRADO_OR"
-                        and productionActual.getTipoVariable() != "LENCERRADO_CORCHETE"
-                        and productionActual.getTipoVariable() != "LENCERRADO_WHILE"
-                        and productionActual.getTipoVariable() != "NOMBREPROD"
-                        and objIndex != len(arrayProdTemp)-1
+                        (nextProduction.getTipoVariable() == "ACTION" or nextProduction.getTipoVariable(
+                        ) == "TERMINAL" or nextProduction.getTipoVariable() == "NOTERMINAL") and productionActual.getTipoVariable() != "OR" and productionActual.getTipoVariable() != "LENCERRADO_OR" and
+                        productionActual.getTipoVariable(
+                        ) != "LENCERRADO_CORCHETE" and productionActual.getTipoVariable() != "LENCERRADO_WHILE"
+                        and productionActual.getTipoVariable() != "NOMBREPROD" and objIndex != len(arrayProdTemp)-1
                     ):
                         tipoCharProd = variableProduction_Enum(tipoVar2.APPEND)
                         tipoCharProd.setNombreTerminal("#")
                         newArrayProduction.append(tipoCharProd)
-            # for obj in self.diccionarioProduccionesFinal[llave]:
-            # print(obj.getTipoVariable() , " : " , obj.getParametroGeneral())
             self.diccionarioProduccionesFinal[llave] = newArrayProduction
             keyLocal = llave.replace(" ", "")
             if("<" in llave and ">" in llave):
                 keyLocal = llave[0:llave.find("<")].replace(" ", "")
-            self.diccionarioProdFinal2[keyLocal] = newArrayProduction
+            self.diccionarioProduccionesFinalV2[keyLocal] = newArrayProduction
 
     def replaceCharValues(self, charValue):
         acumulable = ""
@@ -1219,6 +1416,9 @@ class Reader:
             print()
             # if(cont == 4):
             #     break
+
+        # ! Creacion de Scanner
+        self.writeParser()
         # ? ----------------------------------------------------FINALIZA CREACION DE PRODUCCIONES---------------------------------------------------
         # print(self.jsonFinal["CHARACTERS"])
         """ for llave, valor in self.jsonFinal["TOKENS"].items():
