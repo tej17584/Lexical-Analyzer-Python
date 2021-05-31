@@ -84,6 +84,7 @@ Algunos puntos que se tocan en este proyecto:
 
 ## Link Youtube
 ### En el video se explica TODO el funcionamiento y más ejemplos.
+https://youtu.be/2gR4Itw9E14
 
 <br>
 <br>
