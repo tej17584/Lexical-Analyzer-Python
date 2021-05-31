@@ -40,7 +40,7 @@ class variableProduction_Enum():
         self.nombreNT = ""
         self.isFunction = False
         self.OrdenDeToken = ""
-        self.parameters = []
+        self.parameters = ""
         self.primeraPos = []
 
     def getTipoVariable(self):
@@ -77,10 +77,10 @@ class variableProduction_Enum():
         self.isFunction = True
 
     def getParameters(self):
-        return self.parameters.pop()
+        return self.parameters
 
     def setParameters(self, parametro):
-        self.parameters.append(parametro)
+        self.parameters = parametro
 
     def getPrimeraPos(self):
         return self.primeraPos
