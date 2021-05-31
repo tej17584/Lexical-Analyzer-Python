@@ -1,16 +1,8 @@
-"""
-Nombre: Alejandro Tejada
-Curso: Diseño lenguajes de programacion
-Fecha: Abril 2021
-Programa: parserAlejandroTejada.py
-Propósito: Es el parser
-V 2.0
-"""
 
 import pickle
 
 
-class parserFinal():
+class parserAlejandro():
 
     def __init__(self) -> None:
         self.tokensScaneados = ""  # los tokens leidos
@@ -65,56 +57,59 @@ class parserFinal():
     def getVar(self):
         return self.lookAheadToken.getValor()
 
-    def Expr(self):
+        
+    def Expr (self):
         self.StatSeq()
 
-    def StatSeq(self):
-        while (self.lookAheadToken.getNumeracion() == 5 or self.lookAheadToken.getNumeracion() == 2 or self.lookAheadToken.getNumeracion() == 8):
+    def StatSeq (self):
+        while self.lookAheadToken.getNumeracion() == 5 or self.lookAheadToken.getNumeracion() == 2 or self.lookAheadToken.getNumeracion() == 8:
             self.Stat()
             self.Expect(3)
 
-    def Stat(self):
+
+    def Stat (self):
         value = 0
-        # self.Expresssion(value)
         value = self.Expression(value)
         print("El Resultado de la operacion es: ", value)
 
     def Expression(self, result):
-        result1, result2 = 0, 0
+        result1 , result2 = 0, 0
         result1 = self.Term(result1)
-        while(self.lookAheadToken.getNumeracion() == 4 or self.lookAheadToken.getNumeracion() == 5):
+        while self.lookAheadToken.getNumeracion() == 4 or self.lookAheadToken.getNumeracion() == 5:
             if(self.lookAheadToken.getNumeracion() == 4):
                 self.Expect(4)
                 result2 = self.Term(result2)
                 result1 = int(result1)
                 result2 = int(result2)
                 result1 += result2
+
             elif(self.lookAheadToken.getNumeracion() == 5):
                 self.Expect(5)
                 result2 = self.Term(result2)
-                result1 = int(result1)
-                result2 = int(result2)
                 result1 -= result2
+
 
         result = result1
         return result
 
     def Term(self, result):
-        result1, result2 = 1, 1
+        result1 , result2 = 1, 1
         result1 = self.Factor(result1)
-        while(self.lookAheadToken.getNumeracion() == 6 or self.lookAheadToken.getNumeracion() == 7):
+        while self.lookAheadToken.getNumeracion() == 6 or self.lookAheadToken.getNumeracion() == 7:
             if(self.lookAheadToken.getNumeracion() == 6):
                 self.Expect(6)
                 result2 = self.Factor(result2)
                 result1 = int(result1)
                 result2 = int(result2)
                 result1 *= result2
+
             elif(self.lookAheadToken.getNumeracion() == 7):
                 self.Expect(7)
                 result2 = self.Factor(result2)
                 result1 = int(result1)
                 result2 = int(result2)
                 result1 /= result2
+
 
         result = result1
         return result
@@ -124,28 +119,28 @@ class parserFinal():
         if(self.lookAheadToken.getNumeracion() == 5):
             self.Expect(5)
             sign = -1
+
         if(self.lookAheadToken.getNumeracion() == 2):
             result = self.Number(result)
-            result *= sign
+
         elif(self.lookAheadToken.getNumeracion() == 8):
             self.Expect(8)
             result = self.Expression(result)
             self.Expect(9)
-            result *= sign
 
+        result *= sign
         return result
 
-    def Number(self, result):
+    def  Number(self, result):
         self.Expect(2)
         result = self.getNumber()
         return result
 
+
     def Parser(self):
         self.GetNewToken()
-        # llamamos al primer simbolo de la gramatica
         self.Expr()
 
-    # ?---------------------------------------------------------------
 
     def printERROROnScreen(self, tokenId):
         for x in self.tokensScaneadosV2:
@@ -158,4 +153,6 @@ class parserFinal():
                     print(f'{errorPrint} expected')
 
 
-obj = parserFinal()
+obj = parserAlejandro()
+
+        
