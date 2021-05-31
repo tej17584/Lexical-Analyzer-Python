@@ -3,7 +3,7 @@
   <img src="https://images-na.ssl-images-amazon.com/images/I/51FWXX9KWVL._AC_UL600_SR600,600_.jpg" alt="UkronTadd" width="664"> 
 <br>
 <br>
-Generador de Analizador Léxico
+
 </h1>
     
 <p align="center">
@@ -17,7 +17,7 @@ Generador de Analizador Léxico
 <p align="center">Alejandro Tejada 17584</p>
 <p align="center">Diseño Lenguajes de Programación</p>
 <p align="center">Universidad del Valle de Guatemala</p>
-<p align="center">28/04/2021</p>
+<p align="center">31/05/2021</p>
 <hr />
 
 # Acerca de...

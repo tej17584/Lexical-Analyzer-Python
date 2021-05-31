@@ -475,7 +475,7 @@ class parserAlejandro():
                         sintaxis += "self.lookAheadToken.getNumeracion() == " + str(posToken)
                         if(count < sizePrimeraPos):
                             sintaxis += " or "
-                    #esto es para agregar ifs a las cosas
+                    # esto es para agregar ifs a las cosas
                     condition = "if"
                     if(productionAnterior):
                         condition = "elif"
