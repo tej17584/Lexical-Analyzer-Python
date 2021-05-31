@@ -63,21 +63,21 @@ Algunos puntos que se tocan en este proyecto:
 | 6 | `funciones.py` |Son funciones generales para TODOS los algoritmos|
 | 7 | `main.py` |El programa principal, este genera el scanner|
 | 8 | `NodoDirecto.py` |Es la clase Nodo del algoritmo del conversión directa|
-| 10 | `PostfixEvaluador.py` |Toma la expresión regular y hace el postfix, también opera el valor de los characters|
-| 11 | `postFixTokens.py` |Ordena de forma de postfix el resultado de la expresión regular de la lectura de tokens|
-| 12 | `reader.py` |Es el programa que lee el ATG, el archivo de gramática, y luego genera las expresiones regulares|
-| 13 | `tipoVar.py` |Una clase que posee los atributos de cada tipo de token|
+| 9 | `PostfixEvaluador.py` |Toma la expresión regular y hace el postfix, también opera el valor de los characters|
+| 10 | `postFixTokens.py` |Ordena de forma de postfix el resultado de la expresión regular de la lectura de tokens|
+| 11 | `reader.py` |Es el programa que lee el ATG, el archivo de gramática, y luego genera las expresiones regulares|
+| 12 | `tipoVar.py` |Una clase que posee los atributos de cada tipo de token|
 | 13 | `tipoVarParser.py` |Una clase que posee los atributos para hacer objetos de cada valor de produccion|
-| 12 | `scannerToken.py` |Una clase que guarda en objetos cada token que el Scanner lee|
+| 14 | `scannerToken.py` |Una clase que guarda en objetos cada token que el Scanner lee|
 | 15 | `arrayTokensLeidos` |Es el diccionario que contiene TODOS los tokens leidos|
-| 14 | `scannerProyecto2Tejada.py` |Es el Scanner generado|
-| 15 | `postfixtokensScanner.py` |Un postfix que funciona como representacion del arbol, toma los objetos de la produccion y lo pasa a postfix|
-| 15 | `parserAlejandroTejada.py` |Es EL PARSER YEII!|
-| 15 | `diccionarioEstadosAceptacion` |Es el diccionario con los estados de aceptación|
-| 16 | `diccionarioSiguientePos` |Es el diccionario de la siguiente posición|
-| 17 | `dicionarioAFDFinal` |Es el AFD final|
-| 18 | `pruebas.txt` |Es el file de pruebas|
-| 19 | `Readme.md` |El readme|
+| 16 | `scannerProyecto2Tejada.py` |Es el Scanner generado|
+| 17 | `postfixtokensScanner.py` |Un postfix que funciona como representacion del arbol, toma los objetos de la produccion y lo pasa a postfix|
+| 18 | `parserAlejandroTejada.py` |Es EL PARSER YEII!|
+| 19 | `diccionarioEstadosAceptacion` |Es el diccionario con los estados de aceptación|
+| 20 | `diccionarioSiguientePos` |Es el diccionario de la siguiente posición|
+| 21 | `dicionarioAFDFinal` |Es el AFD final|
+| 22 | `pruebas.txt` |Es el file de pruebas|
+| 23 | `Readme.md` |El readme|
 
 <br>
 <br>
