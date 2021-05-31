@@ -57,23 +57,21 @@ class parserAlejandro():
     def getVar(self):
         return self.lookAheadToken.getValor()
 
-        
-    def Expr (self):
+    def Expr(self):
         self.StatSeq()
 
-    def StatSeq (self):
+    def StatSeq(self):
         while self.lookAheadToken.getNumeracion() == 5 or self.lookAheadToken.getNumeracion() == 2 or self.lookAheadToken.getNumeracion() == 8:
             self.Stat()
             self.Expect(3)
 
-
-    def Stat (self):
+    def Stat(self):
         value = 0
         value = self.Expression(value)
         print("El Resultado de la operacion es: ", value)
 
     def Expression(self, result):
-        result1 , result2 = 0, 0
+        result1, result2 = 0, 0
         result1 = self.Term(result1)
         while self.lookAheadToken.getNumeracion() == 4 or self.lookAheadToken.getNumeracion() == 5:
             if(self.lookAheadToken.getNumeracion() == 4):
@@ -88,12 +86,11 @@ class parserAlejandro():
                 result2 = self.Term(result2)
                 result1 -= result2
 
-
         result = result1
         return result
 
     def Term(self, result):
-        result1 , result2 = 1, 1
+        result1, result2 = 1, 1
         result1 = self.Factor(result1)
         while self.lookAheadToken.getNumeracion() == 6 or self.lookAheadToken.getNumeracion() == 7:
             if(self.lookAheadToken.getNumeracion() == 6):
@@ -109,7 +106,6 @@ class parserAlejandro():
                 result1 = int(result1)
                 result2 = int(result2)
                 result1 /= result2
-
 
         result = result1
         return result
@@ -131,16 +127,14 @@ class parserAlejandro():
         result *= sign
         return result
 
-    def  Number(self, result):
+    def Number(self, result):
         self.Expect(2)
         result = self.getNumber()
         return result
 
-
     def Parser(self):
         self.GetNewToken()
         self.Expr()
-
 
     def printERROROnScreen(self, tokenId):
         for x in self.tokensScaneadosV2:
@@ -154,5 +148,3 @@ class parserAlejandro():
 
 
 obj = parserAlejandro()
-
-        
