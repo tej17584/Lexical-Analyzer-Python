@@ -42,7 +42,7 @@ PRODUCTIONS
     Expression<out result> =       (. result1 , result2 = 0, 0 .) #
        Term<out result1>
        {   ($ "+" # Term<out result2>  # (. result1 = int(result1) .) (. result2 = int(result2) .) (. result1 += result2 .) $)
-        | ($ "-" # Term<out result2> #    (. result1 -= result2 .) $)
+        | ($ "-" # Term<out result2> #   (. result1 = int(result1) .) (. result2 = int(result2) .) (. result1 -= result2 .) $)
        }          #                 (. result   = result1 .)
        .
 
